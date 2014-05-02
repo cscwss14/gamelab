@@ -1,4 +1,4 @@
 gamelab
 =======
 
-Implementing multiplayer snake in Python using Raspberry Pi
+Implementing Pacman in Python using Raspberry Pi
