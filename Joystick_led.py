@@ -1,4 +1,5 @@
-from bootstrap import *
+from lib.bootstrap import *
+import boot.readConfig as init 
 import pygame
 
 #Initialize the Joysticks
@@ -30,6 +31,14 @@ Joystick = pygame.joystick.Joystick(0)
 
 #Initilialize position
 pos = 1
+index = str(pos)
+data = init.config()
+
+
+led.fillOff()
+led.fillRGB(255, 0,0, pos, pos)
+led.update()
+
 quit = False
 while (quit != True):
     event = pygame.event.wait()
@@ -38,11 +47,25 @@ while (quit != True):
     if event.type == pygame.JOYAXISMOTION:
         print("Axis Moved...")
         #Joystick position
-        jy_pos = Joystick.get_axis(0)
-        if(jy_pos < 0):
-        	pos = pos - 1
-        elif(jy_pos > 0):
-		pos = pos + 1
+        jy_pos_horizontal = Joystick.get_axis(0)
+	jy_pos_vertical = Joystick.get_axis(1)
+
+        if(jy_pos_horizontal < 0 and int(data[index]["left"]) != -1 ):
+        	pos = int(data[index]["left"])
+		
+
+        elif(jy_pos_horizontal > 0 and int(data[index]["right"]) != -1 ):
+		pos = int(data[index]["right"]) 
+	
+	if(jy_pos_vertical > 0 and int(data[index]["down"]) != -1):
+		pos = int(data[index]["down"])
+	
+	elif(jy_pos_vertical < 0 and int(data[index]["up"]) != -1):
+		pos = int(data[index]["up"])
+
+	index = str(pos)
+
+
 	led.fillOff()
         led.fillRGB(255, 0,0, pos, pos)
         led.update()
