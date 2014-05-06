@@ -52,14 +52,14 @@ while (quit != True):
 
         if(jy_pos_horizontal < 0 and int(data[index]["left"]) != -1 ):
         	pos = int(data[index]["left"])
-		
+
 
         elif(jy_pos_horizontal > 0 and int(data[index]["right"]) != -1 ):
 		pos = int(data[index]["right"]) 
-	
+
 	if(jy_pos_vertical > 0 and int(data[index]["down"]) != -1):
 		pos = int(data[index]["down"])
-	
+
 	elif(jy_pos_vertical < 0 and int(data[index]["up"]) != -1):
 		pos = int(data[index]["up"])
 
@@ -72,4 +72,3 @@ while (quit != True):
         
     
 pygame.quit()
-
