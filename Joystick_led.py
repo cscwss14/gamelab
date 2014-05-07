@@ -2,9 +2,8 @@ from lib.bootstrap import *
 import boot.readConfig as init 
 import pygame
 import os
+import time
 
-
-#This function initializes sound, joystick, LED strips and returns the descriptor to Joystick
 
 class CGame:
 	def __init__(self):
@@ -14,8 +13,8 @@ class CGame:
 		self.fail = None
 		self.led = None
 		self.joystick_names = []
-
-
+		self.direction_of_led = None
+		
 		pygame.mixer.pre_init(44100, -16, 2, 2048) # setup mixer to avoid sound lag
 		pygame.init()                              #initialize pygame
 	
@@ -39,8 +38,8 @@ class CGame:
 		joystick_count = pygame.joystick.get_count()
 		
 		#We need to setup the display. Otherwise, pygame events will not work
-		#screen_size = [500, 500]
-		#pygame.display.set_mode(screen_size)
+		screen_size = [500, 500]
+		pygame.display.set_mode(screen_size)
 	
 	
 		#Initialize joysticks
@@ -63,46 +62,55 @@ class CGame:
 		pos = 1
 		index = str(pos)
 		data = init.config()
-		
+	
+		self.direction_of_led = "right"	
+		next_pos_of_led = "2"
 		led.fillOff()
-		led.fillRGB(255, 0,0, pos, pos)
+		led.fillRGB(255,0,0, pos, pos)
 		led.update()
 		
 		quit = False
 
 		while (quit != True):
-		    
-		    if pygame.mixer.music.get_busy():
-		        print " music is playing"
-		    else:
-		        print " music is not playing"
+		   	    
+			'''
+			We should create a thread and copy this function in that, since only pygame.event.wait could be handled from here
+			time.sleep(1)
+			index_of_led = data[next_pos_of_led][self.direction_of_led]
+			print "index of led", index_of_led
+		    	next_pos_of_led = data[index_of_led][self.direction_of_led]
+		    	print "next pos", next_pos_of_led
+			'''
+		    	if pygame.mixer.music.get_busy():
+		        	print " music is playing"
+		    	else:
+		        	print " music is not playing"
 		
-		    event = pygame.event.wait()
-		    if event.type == pygame.QUIT:
-		        quit = True
-		    if event.type == pygame.JOYAXISMOTION:
-		        print("Axis Moved...")
-		        #Joystick position
-		        jy_pos_horizontal = self.Joystick.get_axis(0)
-			jy_pos_vertical = self.Joystick.get_axis(1)
+		        event = pygame.event.wait()
+		    	if event.type == pygame.QUIT:
+		        	quit = True
+		    	if event.type == pygame.JOYAXISMOTION:
+		        	print("Axis Moved...")
+		        	#Joystick position
+			        jy_pos_horizontal = self.Joystick.get_axis(0)
+				jy_pos_vertical = self.Joystick.get_axis(1)
 		
-		        if(jy_pos_horizontal < 0 and int(data[index]["left"]) != -1 ):
-		        	pos = int(data[index]["left"])
-				self.jump.play()
-		
-		
-		        elif(jy_pos_horizontal > 0 and int(data[index]["right"]) != -1 ):
-				pos = int(data[index]["right"])
-				self.fail.play() 
-		
-			if(jy_pos_vertical > 0 and int(data[index]["down"]) != -1):
-				pos = int(data[index]["down"])
-				self.jump.play()
-
-		
-			elif(jy_pos_vertical < 0 and int(data[index]["up"]) != -1):
-				pos = int(data[index]["up"])
-				self.fail.play() 
+		       		if(jy_pos_horizontal < 0 and int(data[index]["left"]) != -1 ):
+			        	pos = int(data[index]["left"])
+					self.direction_of_led = "left"
+					self.jump.play()
+			        elif(jy_pos_horizontal > 0 and int(data[index]["right"]) != -1 ):
+					pos = int(data[index]["right"])
+					self.direction_of_led = "right"
+					self.fail.play() 
+				if(jy_pos_vertical > 0 and int(data[index]["down"]) != -1):
+					pos = int(data[index]["down"])
+					self.direction_of_led = "down"
+					self.jump.play()
+				elif(jy_pos_vertical < 0 and int(data[index]["up"]) != -1):
+					pos = int(data[index]["up"])
+					self.direction_of_led = "up"
+					self.fail.play() 
 		
 			index = str(pos)
 		
@@ -116,9 +124,10 @@ class CGame:
 			'''
 		
 			led.fillOff()
-		        led.fillRGB(255, 0,0, pos, pos)
-	       		led.update()
-	        
+			print "position of led", int(next_pos_of_led)
+			#led.fillRGB(0,255,0,int(next_pos_of_led), int(next_pos_of_led))
+	      		led.fillRGB(255, 0,0, pos, pos)
+	    		led.update()
 	    
 		pygame.quit()
 
