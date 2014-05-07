@@ -21,8 +21,8 @@ class CGame:
 	
 		# look for sound & music files in subfolder 'data'
 		pygame.mixer.music.load(os.path.join('data', 'an-turr.ogg'))#load music
-		jump = pygame.mixer.Sound(os.path.join('data','jump.wav'))  #load sound
-		fail = pygame.mixer.Sound(os.path.join('data','fail.wav'))  #load sound
+		self.jump = pygame.mixer.Sound(os.path.join('data','jump.wav'))  #load sound
+		self.fail = pygame.mixer.Sound(os.path.join('data','fail.wav'))  #load sound
 	
 		# play music non-stop
 		pygame.mixer.music.play(-1)
@@ -39,8 +39,8 @@ class CGame:
 		joystick_count = pygame.joystick.get_count()
 		
 		#We need to setup the display. Otherwise, pygame events will not work
-		screen_size = [500, 500]
-		pygame.display.set_mode(screen_size)
+		#screen_size = [500, 500]
+		#pygame.display.set_mode(screen_size)
 	
 	
 		#Initialize joysticks
@@ -83,23 +83,26 @@ class CGame:
 		    if event.type == pygame.JOYAXISMOTION:
 		        print("Axis Moved...")
 		        #Joystick position
-		        jy_pos_horizontal = Joystick.get_axis(0)
-			jy_pos_vertical = Joystick.get_axis(1)
+		        jy_pos_horizontal = self.Joystick.get_axis(0)
+			jy_pos_vertical = self.Joystick.get_axis(1)
 		
 		        if(jy_pos_horizontal < 0 and int(data[index]["left"]) != -1 ):
 		        	pos = int(data[index]["left"])
-				jump.play()
+				self.jump.play()
 		
 		
 		        elif(jy_pos_horizontal > 0 and int(data[index]["right"]) != -1 ):
 				pos = int(data[index]["right"])
-				fail.play() 
+				self.fail.play() 
 		
 			if(jy_pos_vertical > 0 and int(data[index]["down"]) != -1):
 				pos = int(data[index]["down"])
+				self.jump.play()
+
 		
 			elif(jy_pos_vertical < 0 and int(data[index]["up"]) != -1):
 				pos = int(data[index]["up"])
+				self.fail.play() 
 		
 			index = str(pos)
 		
