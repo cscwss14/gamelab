@@ -72,7 +72,7 @@ class CGame:
         next_pos = 0
         identity = 0
         score = 0
-        dict_pos_traversed = {"identity":"pos"}
+        dict_pos_traversed = {index:1}
         quit = False
 
         while (quit != True):
@@ -117,13 +117,10 @@ class CGame:
                     self.fail.play()
 
             index = str(pos)
-            next_pos = pos
-            identity = identity + 1
-            check =  dict_pos_traversed.has_key('next_pos')
-            if (check == False):
-                dict_pos_traversed.update({"identity":"next_pos"})
+            if (dict_pos_traversed.has_key(index) == False):
+                dict_pos_traversed.update(index:1)
                 score = score + 1
-                print "Value"+score
+                print "%d" %score
 
             '''
             To stop the music :D :D
