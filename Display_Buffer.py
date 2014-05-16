@@ -105,7 +105,16 @@ class Display_Buffer:
 					if(item.state == 1):
 						self.led.fillRGB(item.color[0], item.color[1], item.color[2], item.LED, item.LED)
 						self.led.update()
-				
+	def Flush_Once(self):
+		self.led.fillOff()
+                self.led.update()
+		print "Flushing once"
+               
+                #Flush the data to the LED Strips
+                for item in self.Pixels:
+                	if(item.state == 1):
+                        	self.led.fillRGB(item.color[0], item.color[1], item.color[2], item.LED, item.LED)
+                                self.led.update()
 
 	def Set_Pixel_State(self, pixel, state):
 		#Find the Pixel corresponding to the LED

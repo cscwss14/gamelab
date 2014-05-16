@@ -79,6 +79,7 @@ class CGame:
 
 		self.dbuffer.Set_Pixel_Color(pos, (255, 0,0))
 		self.dbuffer.Set_Pixel_State(pos, 1)
+		self.dbuffer.Flush_Once()
 		
 		quit = False
 
@@ -120,6 +121,7 @@ class CGame:
 						self.dbuffer.Set_Pixel_State(pos, 1)
 						self.dbuffer.Set_Pixel_Color(prev_pos, (0, 0, 0))
                                                 self.dbuffer.Set_Pixel_State(prev_pos, 0)
+						self.dbuffer.Flush_Once()
 				        elif(jy_pos_horizontal > 0 and int(data[index]["right"]) != -1 ):
 						prev_pos = pos
 						pos = int(data[index]["right"])
@@ -129,6 +131,7 @@ class CGame:
                                                 self.dbuffer.Set_Pixel_State(pos, 1)
 						self.dbuffer.Set_Pixel_Color(prev_pos, (0, 0, 0))
                                                 self.dbuffer.Set_Pixel_State(prev_pos, 0)
+						self.dbuffer.Flush_Once()
 					if(jy_pos_vertical > 0 and int(data[index]["down"]) != -1):
 						prev_pos = pos
 						pos = int(data[index]["down"])
@@ -138,6 +141,7 @@ class CGame:
                                                 self.dbuffer.Set_Pixel_State(pos, 1)
 						self.dbuffer.Set_Pixel_Color(prev_pos, (0, 0, 0))
                                                 self.dbuffer.Set_Pixel_State(prev_pos, 0)
+						self.dbuffer.Flush_Once()
 					elif(jy_pos_vertical < 0 and int(data[index]["up"]) != -1):
 						prev_pos = pos
 						pos = int(data[index]["up"])
@@ -147,6 +151,8 @@ class CGame:
                                                 self.dbuffer.Set_Pixel_State(pos, 1)
 						self.dbuffer.Set_Pixel_Color(prev_pos, (0, 0, 0))
                                                 self.dbuffer.Set_Pixel_State(prev_pos, 0)
+						self.dbuffer.Flush_Once()
+
 			index = str(pos)
 		
 		
@@ -174,10 +180,4 @@ class CGame:
 
 
 app = CGame()
-refreshWin = tc.FuncThread(app.dbuffer.Start_Flushing)
-threadMain = tc.FuncThread(app.main)
-refreshWin.start()
-threadMain.start()
-threadMain.join()
-refreshWin.join()
-
+app.main()
