@@ -59,7 +59,7 @@ class CGame:
 	
 	
 		#Initialize the display buffer
-		self.dbuffer = dbuff.Display_Buffer(ENV_DESKTOP)
+		self.dbuffer = dbuff.Display_Buffer(ENV_LED)
 
 	def main(self):
 		#Initilialize position
@@ -78,6 +78,7 @@ class CGame:
 		prev_pos = pos
 
 		self.dbuffer.Set_Pixel_Color(pos, (255, 0,0))
+		self.dbuffer.Set_Pixel_State(pos, 1)
 		
 		quit = False
 
@@ -93,11 +94,12 @@ class CGame:
 		    	next_pos_of_led = data[index_of_led][self.direction_of_led]
 		    	print "next pos", next_pos_of_led
 			'''
-		    	if pygame.mixer.music.get_busy():
+		    	'''
+			if pygame.mixer.music.get_busy():
 		        	print " music is playing"
 		    	else:
 		        	print " music is not playing"
-			
+			'''
 			time.sleep(0.005)			
 
 		        for event in pygame.event.get():
@@ -114,30 +116,37 @@ class CGame:
 				        	pos = int(data[index]["left"])
 						self.direction_of_led = "left"
 						self.jump.play()
-						self.dbuffer.Set_Pixel_Color(prev_pos, (0, 255, 0))
 						self.dbuffer.Set_Pixel_Color(pos, (255, 0,0))
+						self.dbuffer.Set_Pixel_State(pos, 1)
+						self.dbuffer.Set_Pixel_Color(prev_pos, (0, 0, 0))
+                                                self.dbuffer.Set_Pixel_State(prev_pos, 0)
 				        elif(jy_pos_horizontal > 0 and int(data[index]["right"]) != -1 ):
 						prev_pos = pos
 						pos = int(data[index]["right"])
 						self.direction_of_led = "right"
 						self.fail.play()
-						self.dbuffer.Set_Pixel_Color(prev_pos, (0, 255, 0))
-						self.dbuffer.Set_Pixel_Color(pos, (255, 0,0)) 
+                                                self.dbuffer.Set_Pixel_Color(pos, (255, 0,0))
+                                                self.dbuffer.Set_Pixel_State(pos, 1)
+						self.dbuffer.Set_Pixel_Color(prev_pos, (0, 0, 0))
+                                                self.dbuffer.Set_Pixel_State(prev_pos, 0)
 					if(jy_pos_vertical > 0 and int(data[index]["down"]) != -1):
 						prev_pos = pos
 						pos = int(data[index]["down"])
 						self.direction_of_led = "down"
 						self.jump.play()
-						self.dbuffer.Set_Pixel_Color(prev_pos, (0, 255, 0))
-						self.dbuffer.Set_Pixel_Color(pos, (255, 0,0))
+                                                self.dbuffer.Set_Pixel_Color(pos, (255, 0,0))
+                                                self.dbuffer.Set_Pixel_State(pos, 1)
+						self.dbuffer.Set_Pixel_Color(prev_pos, (0, 0, 0))
+                                                self.dbuffer.Set_Pixel_State(prev_pos, 0)
 					elif(jy_pos_vertical < 0 and int(data[index]["up"]) != -1):
 						prev_pos = pos
 						pos = int(data[index]["up"])
 						self.direction_of_led = "up"
 						self.fail.play()
-						self.dbuffer.Set_Pixel_Color(prev_pos, (0, 255, 0))
-						self.dbuffer.Set_Pixel_Color(pos, (255, 0,0)) 
-			
+                                                self.dbuffer.Set_Pixel_Color(pos, (255, 0,0))
+                                                self.dbuffer.Set_Pixel_State(pos, 1)
+						self.dbuffer.Set_Pixel_Color(prev_pos, (0, 0, 0))
+                                                self.dbuffer.Set_Pixel_State(prev_pos, 0)
 			index = str(pos)
 		
 		
