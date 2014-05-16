@@ -51,7 +51,7 @@ class Display_Buffer:
  
     			# This limits the while loop to a max of 10 times per second.
     			# Leave this out and we will use all CPU we can.
-    			clock.tick(10)
+    			#clock.tick(50)
      
     			for event in pygame.event.get(): # User did something
         			if event.type == pygame.QUIT: # If user clicked close
@@ -82,13 +82,4 @@ class Display_Buffer:
 		for item in xrange(len(self.Pixels)):
 			if((int(self.Pixels_info[str(pixel)]["x"]) == self.Pixels[item].x) and (int(self.Pixels_info[str(pixel)]["y"]) == self.Pixels[item].y)):
 				self.Pixels[item].color = color
-
-
-if __name__ == '__main__':
-    buf = Display_Buffer(0)
-    buf.Set_Pixel_Color(1, [255, 0,0])
-    Flusher_service =  multiprocessing.Process(name='Flusher', target=buf.Start_Flushing)
-    Flusher_service.start()
-
-
 
