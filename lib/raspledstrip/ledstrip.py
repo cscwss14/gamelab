@@ -15,7 +15,7 @@ class ChannelOrder:
 
 class LEDStrip:
 
-    def __init__(self, leds, use_py_spi = False, dev="/dev/spidev0.0", driver="LPD8806"):
+    def __init__(self, leds, use_py_spi = True, dev="/dev/spidev1.0", driver="LPD8806"):
         #Variables:
         #	leds -- strand size
         #	dev -- spi device
@@ -60,6 +60,14 @@ class LEDStrip:
         if end == 0 or end > self.lastIndex:
             end = self.lastIndex
         for led in range(start, end + 1): #since 0-index include end in range
+            self.__set_internal(led, color)
+	
+    def fillIndexes(self,ledDict = {}):
+        for led,col in ledDict.iteritems(): 
+	    if led < 0:
+		print "How stupid of you to pass negative indexes"
+		return
+	    color = Color(col[0],col[1],col[2])
             self.__set_internal(led, color)
 
     #Fill the strand (or a subset) with a single color using RGB values
