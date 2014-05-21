@@ -15,7 +15,7 @@ class ChannelOrder:
 
 class LEDStrip:
 
-    def __init__(self, leds, use_py_spi = True, dev="/dev/spidev1.0", driver="LPD8806"):
+    def __init__(self, leds, use_py_spi = True, dev="/dev/spidev0.0", driver="LPD8806"):
         #Variables:
         #	leds -- strand size
         #	dev -- spi device
