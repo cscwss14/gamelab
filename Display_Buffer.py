@@ -22,8 +22,8 @@ class Display_Buffer:
 		
 		self.environment = environment	
 
-		#default color - green
-		color = (0,255,0)
+		#default color - white
+		color = (255,255,255)
 			
                 #default state
                 state = 0               
@@ -49,7 +49,8 @@ class Display_Buffer:
                 self.led = LEDStrip(159)
                 self.led.setMasterBrightness(0.5)
 
-	
+	#This Method is called only when the environment is Desktop
+	#Incase of LEDs, periodic Flushing will result in blinking
 	def Start_Flushing(self):
 		print "In Flusher" + str(self.environment)		
 		if(self.environment == ENV_DESKTOP):
@@ -70,60 +71,68 @@ class Display_Buffer:
  
     				# This limits the while loop to a max of 10 times per second.
     				# Leave this out and we will use all CPU we can.
-    				clock.tick(50)
+    				#clock.tick(50)
+				time.sleep(0.001)
      
     				for event in pygame.event.get(): # User did something
         				if event.type == pygame.QUIT: # If user clicked close
             					done=True # Flag that we are done so we exit this loop
-                        	#White background
-    				screen.fill([255, 255, 255])
+                        	#Black background
+    				screen.fill([0, 0, 0])
                         
                         	#Draw the Pixels
                         	for item in self.Pixels:
-    					pygame.draw.circle(screen, item.color, [(item.x + 1) * 50, (item.y + 1) * 50], 10, 0)
-    
+					if(item.state == 1):
+    						pygame.draw.circle(screen, item.color, [(item.x + 1) * 50, (item.y + 1) * 50], 10, 0)
+					
+		
     				# Go ahead and update the screen with what we've drawn.
     				# This MUST happen after all the other drawing commands.
     				pygame.display.flip()
  
 			# Be IDLE friendly
 			pygame.quit()
-		else:	
-			done = False
-                        clock = pygame.time.Clock()
-			
-			self.led.fillOff()
-			self.led.update()
 
-			while not done:
-				print "Flushing"
-				self.led.fillOff()
-				self.led.update()
-				clock.tick(50)
-				#Flush the data to the LED Strips
-				for item in self.Pixels:
-					if(item.state == 1):
-						self.led.fillRGB(item.color[0], item.color[1], item.color[2], item.LED, item.LED)
-						self.led.update()
-	def Flush_Once(self):
-		self.led.fillOff()
-                self.led.update()
-		print "Flushing once"
-               
-                #Flush the data to the LED Strips
-                for item in self.Pixels:
-                	if(item.state == 1):
-                        	self.led.fillRGB(item.color[0], item.color[1], item.color[2], item.LED, item.LED)
-                                self.led.update()
+
+	#This function will push the update to the LED
+	#when the environment is LED, each change in the pixel will be immediately flushed to the LEDs
+	#This is for internal usage
+	def Push_to_Led(self, pixel):
+		if(pixel.state == 1):
+			self.led.fillRGB(pixel.color[0], pixel.color[1], pixel.color[2], pixel.LED, pixel.LED)
+		else:
+			self.led.setOff(pixel.LED)
+
+		self.led.update()
 
 	def Set_Pixel_State(self, pixel, state):
 		#Find the Pixel corresponding to the LED
 		for item in xrange(len(self.Pixels)):
 			if(self.Pixels[item].LED == pixel):
 				self.Pixels[item].state = state
+				#Push Immediately when environment is LED, otherwise for desktop need not do nothing
+                                #Because it is refreshed periodically
+                                if(self.environment == ENV_LED):
+                                        self.Push_to_Led(self.Pixels[item])
+
 
 	def Set_Pixel_Color(self, pixel, color):
 		#Find the Pixel corresponding to the LED
 		for item in xrange(len(self.Pixels)):
                         if(self.Pixels[item].LED == pixel):
                                 self.Pixels[item].color = color
+				#Push Immediately when environment is LED, otherwise for desktop need not do nothing
+				#Because it is refreshed periodically
+				if(self.environment == ENV_LED):
+					self.Push_to_Led(self.Pixels[item])
+
+	def Set_Pixel(self, pixel, color, state):
+		 #Find the Pixel corresponding to the LED
+                for item in xrange(len(self.Pixels)):
+                        if(self.Pixels[item].LED == pixel):
+                                self.Pixels[item].color = color
+				self.Pixels[item].state = state
+				#Push Immediately when environment is LED, otherwise for desktop need not do nothing
+                                #Because it is refreshed periodically
+                                if(self.environment == ENV_LED):
+                                        self.Push_to_Led(self.Pixels[item])
