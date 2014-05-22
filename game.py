@@ -126,7 +126,7 @@ class CGame:
 						self.direction_of_pacman = "left"
 						
 						#Set Off Pac-man's old position
-						self.dbuffer.Set_Pixel(prev_pos, self.colorPacMan, 0)
+						self.dbuffer.Set_Pixel(prev_pos, (255, 255, 255), 1)
 
 						#Set Pac-man's new position
 						self.dbuffer.Set_Pixel(self.posPacMan, self.colorPacMan, 1)
@@ -138,7 +138,7 @@ class CGame:
 						self.direction_of_pacman = "right"
 
 						#Set Off Pac-man's old position
-						self.dbuffer.Set_Pixel(prev_pos, self.colorPacMan, 0)
+						self.dbuffer.Set_Pixel(prev_pos, (255, 255, 255), 1)
 
 						#Set Pac-man's new position
 						self.dbuffer.Set_Pixel(self.posPacMan, self.colorPacMan, 1)
@@ -150,7 +150,7 @@ class CGame:
 						self.direction_of_pacman = "down"
 
 						#Set Off Pac-man's old position
-						self.dbuffer.Set_Pixel(prev_pos, self.colorPacMan, 0)
+						self.dbuffer.Set_Pixel(prev_pos, (255, 255, 255), 1)
 
 						#Set Pac-man's new position
 						self.dbuffer.Set_Pixel(self.posPacMan, self.colorPacMan, 1)
@@ -162,7 +162,7 @@ class CGame:
 						self.direction_of_pacman = "up"
 
 						#Set Off Pac-man's old position
-						self.dbuffer.Set_Pixel(prev_pos, self.colorPacMan, 0)
+						self.dbuffer.Set_Pixel(prev_pos, (255, 255, 255), 1)
 
 						#Set Pac-man's new position
 						self.dbuffer.Set_Pixel(self.posPacMan, self.colorPacMan, 1)
@@ -199,7 +199,7 @@ class CGame:
 				print "prev_pos,posPacMan",prev_pos, self.posPacMan
 				
 				#Set Off Pac-man's old position
-				self.dbuffer.Set_Pixel(prev_pos, self.colorPacMan, 0)
+				self.dbuffer.Set_Pixel(prev_pos, (255, 255, 255), 1)
 
 				#Set Pac-man's new position
 				self.dbuffer.Set_Pixel(self.posPacMan, self.colorPacMan, 1)
