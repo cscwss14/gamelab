@@ -17,6 +17,7 @@ class LPD8806(object):
 
     #Push new data to strand
     def update(self, buffer):
+	temp_buffer = []
         if self.use_py_spi:
             for x in range(self.leds):
 		temp_buffer = temp_buffer + [i for i in buffer[x]]
