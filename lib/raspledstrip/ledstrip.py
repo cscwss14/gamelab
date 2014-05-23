@@ -85,7 +85,16 @@ class LEDStrip:
         
     def fillOff(self, start=0, end=0):
         self.fillRGB(0, 0, 0, start, end)
+    
+    #Fill the pixel with given color and intensity
+    def fillPixelWithIntensity(self, r, g, b, pixel, intensity):
+	if(pixel < 0 or pixel > self.lastIndex):
+            return; #don't go out of bounds
 
+        self.buffer[pixel][self.c_order[0]] = self.gamma[int(r * intensity)]
+        self.buffer[pixel][self.c_order[1]] = self.gamma[int(g * intensity)]
+        self.buffer[pixel][self.c_order[2]] = self.gamma[int(b * intensity)]
+        
     #internal use only. sets pixel color
     def __set_internal(self, pixel, color):
         if(pixel < 0 or pixel > self.lastIndex):
