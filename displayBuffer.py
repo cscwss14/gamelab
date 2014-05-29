@@ -1,4 +1,4 @@
-from lib.bootstrap import *
+#from lib.bootstrap import *
 import boot.readConfig as init 
 import pygame
 import thread
@@ -10,12 +10,12 @@ ENV_DESKTOP = 1
 
 #Pixel Class - For Storing information about each pixel
 class Pixel:
-	def __init__(self, x, y, color, state):
+	def __init__(self, led, x, y, color, state):
 		self.x = x
 		self.y = y
 		self.color = color
                 self.state = state
-		self.LED = 0
+		self.LED = led
 
 class Display_Buffer:
 	def __init__(self, environment):
@@ -25,29 +25,22 @@ class Display_Buffer:
 		#default color - white
 		color = (255,255,255)
 			
-                #default state
-                state = 0               
+        	#default state
+        	state = 0               
  
-		#Initialize all the Pixels
-		self.Pixels = []
-		for x in xrange(10):
-			for y in xrange(10):
-				self.Pixels.append(Pixel(x, y, color, state))
-
-
 		#Get the Mapping of LED -to - Pixels
 		self.Pixels_info = init.read_pixel_info()
 
-		#Initialize the LEDs
+		#Initialize all the Pixels
+		self.Pixels = {}
 		keys = self.Pixels_info.keys()
 		for key in keys:
-			for index in xrange(len(self.Pixels)):
-				if((self.Pixels[index].x  == int(self.Pixels_info[key]["x"])) and (self.Pixels[index].y  == int(self.Pixels_info[key]["y"]))):
-					self.Pixels[index].LED = int(key)  
-
-		#Initialize LED
-                self.led = LEDStrip(159)
-                self.led.setMasterBrightness(0.5)
+			self.Pixels[key] = Pixel(int(key), int(self.Pixels_info[key]["x"]), int(self.Pixels_info[key]["y"]), color, state)
+		
+		if(self.environment == ENV_LED):
+			#Initialize LED
+                	self.led = LEDStrip(320)
+                	self.led.setMasterBrightness(0.5)
 
 	#This Method is called only when the environment is Desktop
 	#Incase of LEDs, periodic Flushing will result in blinking
@@ -81,9 +74,10 @@ class Display_Buffer:
     				screen.fill([0, 0, 0])
                         
                         	#Draw the Pixels
-                        	for item in self.Pixels:
-					if(item.state == 1):
-    						pygame.draw.circle(screen, item.color, [(item.x + 1) * 50, (item.y + 1) * 50], 10, 0)
+				keys = self.Pixels.keys()
+                        	for key in keys:
+					if(self.Pixels[key].state == 1):
+    						pygame.draw.circle(screen, self.Pixels[key].color, [(self.Pixels[key].x + 1) * 20, (self.Pixels[key].y + 1) * 20], 5, 0)
 					
 		
     				# Go ahead and update the screen with what we've drawn.
@@ -107,32 +101,29 @@ class Display_Buffer:
 
 	def Set_Pixel_State(self, pixel, state):
 		#Find the Pixel corresponding to the LED
-		for item in xrange(len(self.Pixels)):
-			if(self.Pixels[item].LED == pixel):
-				self.Pixels[item].state = state
-				#Push Immediately when environment is LED, otherwise for desktop need not do nothing
-                                #Because it is refreshed periodically
-                                if(self.environment == ENV_LED):
-                                        self.Push_to_Led(self.Pixels[item])
-
+		 self.Pixels[str(pixel)].state = state
+		
+		 #Push Immediately when environment is LED, otherwise for desktop need not do nothing
+                 #Because it is refreshed periodically
+                 if(self.environment == ENV_LED):
+                 	self.Push_to_Led(self.Pixels[str(pixel)])
 
 	def Set_Pixel_Color(self, pixel, color):
 		#Find the Pixel corresponding to the LED
-		for item in xrange(len(self.Pixels)):
-                        if(self.Pixels[item].LED == pixel):
-                                self.Pixels[item].color = color
-				#Push Immediately when environment is LED, otherwise for desktop need not do nothing
-				#Because it is refreshed periodically
-				if(self.environment == ENV_LED):
-					self.Push_to_Led(self.Pixels[item])
+		 self.Pixels[str(pixel)].color = color
+		 
+		
+		 #Push Immediately when environment is LED, otherwise for desktop need not do nothing
+                 #Because it is refreshed periodically
+                 if(self.environment == ENV_LED):
+                 	self.Push_to_Led(self.Pixels[str(pixel)])
 
 	def Set_Pixel(self, pixel, color, state):
 		 #Find the Pixel corresponding to the LED
-                for item in xrange(len(self.Pixels)):
-                        if(self.Pixels[item].LED == pixel):
-                                self.Pixels[item].color = color
-				self.Pixels[item].state = state
-				#Push Immediately when environment is LED, otherwise for desktop need not do nothing
-                                #Because it is refreshed periodically
-                                if(self.environment == ENV_LED):
-                                        self.Push_to_Led(self.Pixels[item])
+		 self.Pixels[str(pixel)].color = color
+		 self.Pixels[str(pixel)].state = state
+		
+		 #Push Immediately when environment is LED, otherwise for desktop need not do nothing
+                 #Because it is refreshed periodically
+                 if(self.environment == ENV_LED):
+                 	self.Push_to_Led(self.Pixels[str(pixel)])
