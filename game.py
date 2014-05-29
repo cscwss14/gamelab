@@ -1,13 +1,28 @@
-from lib.bootstrap import *
+#from lib.bootstrap import *
 import boot.readConfig as init 
 import pygame
 import os
 import time, threadClass as tc
 import displayBuffer as dbuff
 import sys, getopt
-
+import threading
 ENV_LED = 0
 ENV_DESKTOP = 1
+
+#Default Environment
+environment = ENV_LED
+
+#Command Line Arguments
+if(len(sys.argv) > 1):
+        if(str(sys.argv[1]) == '-h'):
+                print "Game running on LED"
+                environment = ENV_LED
+		from lib.bootstrap import *
+
+        elif(str(sys.argv[1]) == '-d'):
+                print "Game running on DESKTOP"
+                environment = ENV_DESKTOP
+
 
 class CGame:
 	def __init__(self, environment):
@@ -22,11 +37,11 @@ class CGame:
 		self.direction_of_pacman = None
 		self.data  = init.config()
 		self.posPacMan = 1
-		self.posGhost = 1
+		self.posGhost1 = 1
 		self.indexPacMan = str(self.posPacMan)
-		self.indexGhost = str(self.posGhost)
+		self.indexGhost1 = str(self.posGhost1)
 		self.direction_of_pacman = "up"	
-		self.direction_of_ghost = "up"	
+		self.direction_of_ghost = "down"	
 		#change the default direction of ghost
 		self.direction_of_ghost1 = "up"	
 		self.environment = environment
@@ -34,8 +49,8 @@ class CGame:
 		self.colorGhost = (255, 0, 0)
 		self.colorCoins = (255,255,255)
 		self.twoJSPresent = False
-
-
+		self.lock = threading.Lock()
+		
 		#Initialize the display buffer
 		self.dbuffer = dbuff.Display_Buffer(self.environment)
 
@@ -87,23 +102,18 @@ class CGame:
 			if(self.Pixels_info[key]["type"] == "P"):
 				self.dbuffer.Set_Pixel(int(key), self.colorPacMan , 1)
 				self.posPacMan = int(key)
+				self.indexPacMan = str(self.posPacMan)
 			elif(self.Pixels_info[key]["type"] == "G"):
 				self.dbuffer.Set_Pixel(int(key), self.colorGhost , 1)
 				self.posGhost1 = int(key)
+				self.indexGhost1 = str(self.posGhost1)
 			elif(self.Pixels_info[key]["type"] == "C"):
 				self.dbuffer.Set_Pixel(int(key), self.colorCoins , 1)		
 
 
-	def main(self):
-		#Load the array of LEDs to be used for first boot for displaying coins
-		#To implement, right now initializing everything
-		#It will read all LEDs from JSON file. Depending upon their type, they will have different colors
-		self.load_layout()		
-                
-	
-		
+	def main(self):		
 		prev_posPacman = self.posPacMan
-		prev_posGhost  = self.posGhost
+		prev_posGhost1  = self.posGhost1
 		quit = False
 
 		clock = pygame.time.Clock()
@@ -131,7 +141,7 @@ class CGame:
 				        	jy_pos2_horizontal = self.Joystick2.get_axis(0)
 						jy_pos2_vertical = self.Joystick2.get_axis(1)
 					
-						handleJoystickTwo(jy_pos2_horizontal,jy_pos2_vertical)		 
+						self.handleJoystickTwo(jy_pos2_horizontal,jy_pos2_vertical)		 
 
 
 
@@ -199,53 +209,60 @@ class CGame:
 		pygame.quit()
 
 
-	#def handleJoystickOne(self,horizontal,vertical):
-
 
 	def handleJoystickTwo(self,jy_pos2_horizontal,jy_pos2_vertical):					
 			 
-  		if(jy_pos2_horizontal < 0 and int(self.data[self.indexGhost]["left"]) != -1 ):
-						
-			prev_posGhost = self.posGhost
-	       		self.posGhost = int(self.data[self.indexGhost]["left"])
+  		if(jy_pos2_horizontal < 0 and int(self.data[self.indexGhost1]["left"]) != -1 ):
+			print "left pressed"
+			print "self.posGhost1",self.posGhost1					
+			prev_posGhost1 = self.posGhost1
+	       		self.posGhost1 = int(self.data[self.indexGhost1]["left"])
+			
 			self.direction_of_ghost = "left"
 				
 			#Set Off Pac-man's old position
-			self.dbuffer.Set_Pixel(prev_posGhost, (255, 255, 255), 1)
+			self.dbuffer.Set_Pixel(prev_posGhost1, (255, 255, 255), 1)
 			#Set Pac-man's new position
-			self.dbuffer.Set_Pixel(self.posGhost, self.colorGhost, 1)
+			self.dbuffer.Set_Pixel(self.posGhost1, self.colorGhost, 1)
 
-	       	elif(jy_pos2_horizontal > 0 and int(self.data[self.indeGhost]["right"]) != -1 ):
-			prev_posGhost = self.posGhost
-			self.posGhost = int(self.data[self.indexGhost]["right"])
+	       	elif(jy_pos2_horizontal > 0 and int(self.data[self.indexGhost1]["right"]) != -1 ):
+			print "right pressed"
+			print "self.posGhost1",self.posGhost1					
+			prev_posGhost1 = self.posGhost1
+			self.posGhost1 = int(self.data[self.indexGhost1]["right"])
 			self.direction_of_ghost = "right"
 			#Set Off Pac-man's old position
-			self.dbuffer.Set_Pixel(prev_posGhost, (255, 255, 255), 1)
+			self.dbuffer.Set_Pixel(prev_posGhost1, (255, 255, 255), 1)
 			#Set Pac-man's new position
-			self.dbuffer.Set_Pixel(self.posGhost, self.colorGhost, 1)
+			self.dbuffer.Set_Pixel(self.posGhost1, self.colorGhost, 1)
 
 						
-		if(jy_pos2_vertical > 0 and int(self.data[self.indexGhost]["down"]) != -1):
-			prev_posGhost = self.posGhost
-			self.posGhost = int(self.data[self.indexGhost]["down"])
+		if(jy_pos2_vertical > 0 and int(self.data[self.indexGhost1]["down"]) != -1):
+			print "down pressed"
+			print "self.posGhost1",self.posGhost1					
+			prev_posGhost1 = self.posGhost1
+			self.posGhost1 = int(self.data[self.indexGhost1]["down"])
 			self.direction_of_ghost = "down"
 			#Set Off Pac-man's old position
-			self.dbuffer.Set_Pixel(prev_posGhost, (255, 255, 255), 1)
+			self.dbuffer.Set_Pixel(prev_posGhost1, (255, 255, 255), 1)
 			#Set Pac-man's new position
-			self.dbuffer.Set_Pixel(self.posGhost, self.colorGhost, 1)
+			self.dbuffer.Set_Pixel(self.posGhost1, self.colorGhost, 1)
 
 						
-		elif(jy_pos2_vertical < 0 and int(self.data[self.indexGhost]["up"]) != -1):
-			prev_posGhost = self.posGhost
-			self.posGhost = int(self.data[self.indexGhost]["up"])
+		elif(jy_pos2_vertical < 0 and int(self.data[self.indexGhost1]["up"]) != -1):
+			print "up pressed"
+			print "self.posGhost1",self.posGhost1					
+			prev_posGhost1 = self.posGhost1
+			self.posGhost1 = int(self.data[self.indexGhost1]["up"])
 			self.direction_of_ghost = "up"
 			#Set Off Pac-man's old position
-			self.dbuffer.Set_Pixel(prev_posGhost, (255, 255, 255), 1)
+			self.dbuffer.Set_Pixel(prev_posGhost1, (255, 255, 255), 1)
 	
 			#Set Pac-man's new position
-			self.dbuffer.Set_Pixel(self.posGhost, self.colorGhost, 1)
-
-
+	
+			self.dbuffer.Set_Pixel(self.posGhost1, self.colorGhost, 1)
+	
+		self.indexGhost1 = str(self.posGhost1)
 
 	
 
@@ -257,38 +274,43 @@ class CGame:
 		
 		while 1:
 			#print "prev_pos,posPacMan",prev_pos, self.posPacMan
-			#put a lock here
+			self.lock.acquire()
 			prev_pos = self.posPacMan
 			if (int(self.data[self.indexPacMan][self.direction_of_pacman]) != -1):
 				self.posPacMan = int(self.data[self.indexPacMan][self.direction_of_pacman])
 				self.indexPacMan = str(self.posPacMan)
 				
-				#print "prev_pos,posPacMan",prev_pos, self.posPacMan
 				
 				#Set Off Pac-man's old position
 				self.dbuffer.Set_Pixel(prev_pos, (255, 255, 255), 1)
 
 				#Set Pac-man's new position
 				self.dbuffer.Set_Pixel(self.posPacMan, self.colorPacMan, 1)
+			
+			if (self.twoJSPresent == True):
+				prev_pos = self.posGhost1
+				if (int(self.data[self.indexGhost1][self.direction_of_ghost]) != -1):
+					self.posGhost1 = int(self.data[self.indexGhost1][self.direction_of_ghost])
+					self.indexGhost1 = str(self.posGhost1)
+				
+				
+					#Set Off Ghost's old position
+					self.dbuffer.Set_Pixel(prev_pos, (255, 255, 255), 1)
 
-			#release here
+					#Set Ghost's new position
+					self.dbuffer.Set_Pixel(self.posGhost1, self.colorGhost, 1)
+			
+			self.lock.release()
 			time.sleep(0.5)
 
 
-#Default Environment
-environment = ENV_LED
-
-#Command Line Arguments
-if(len(sys.argv) > 1):
-	if(str(sys.argv[1]) == '-h'):
-		print "Game running on LED"
-		environment = ENV_LED
-	elif(str(sys.argv[1]) == '-d'):
-		print "Game running on DESKTOP"
-		environment = ENV_DESKTOP
-
 app = CGame(environment)
+#Load the array of LEDs to be used for first boot for displaying coins
+#To implement, right now initializing everything
+#It will read all LEDs from JSON file. Depending upon their type, they will have different colors
+app.load_layout()
 
+print "Pacman position"+str(app.posPacMan)
 
 refreshWin = tc.FuncThread(app.ledRunningFunc)
 if(app.environment == ENV_DESKTOP):
@@ -306,5 +328,4 @@ threadMain.join()
 if(app.environment == ENV_DESKTOP):
 	refreshDesktop.join()
 refreshWin.join()
-#app.main()
-#app.ledRunningFunc()
+
