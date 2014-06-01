@@ -1,11 +1,11 @@
 #from lib.bootstrap import *
 import boot.readConfig as init 
 import pygame
-import os, threading
+import os
 import time, threadClass as tc
 import displayBuffer as dbuff
 import sys, getopt, threading
-import astarBBB as astar
+#import astarBBB as astar
 
 ENV_LED = 0
 ENV_DESKTOP = 1
@@ -56,11 +56,9 @@ class CGame:
 		self.twoJSPresent = False
 		self.lock = threading.Lock()
 		#Initialize the display buffer
-		self.dbuffer = dbuff.Display_Buffer(self.environment)
-		self.aiPath = astar.CFindPath(self.data)	
+		self.dbuffer = dbuff.Display_Buffer(self.environment, self.data)
+		#self.aiPath = astar.CFindPath(self.data)	
 
-		#Get the Mapping of LED -to - Pixels
-		self.Pixels_info = init.read_pixel_info()
 
 		#pygame.mixer.pre_init(44100, -16, 2, 2048) # setup mixer to avoid sound lag
 		pygame.init()                              #initialize pygame
@@ -102,21 +100,21 @@ class CGame:
 
 	def load_layout(self):
 
-		keys = self.Pixels_info.keys()
+		keys = self.data.keys()
 		for key in keys:
-			if(self.Pixels_info[key]["type"] == "P"):
+			if(self.data[key]["type"] == "P"):
 				self.dbuffer.Set_Pixel(int(key), self.colorPacMan , 1)
 				self.posPacMan = int(key)
 				self.indexPacMan = str(self.posPacMan)
-			elif(self.Pixels_info[key]["type"] == "G"):
+			elif(self.data[key]["type"] == "G"):
 				self.dbuffer.Set_Pixel(int(key), self.colorGhost , 1)
 				self.posGhost1 = int(key)
 				self.indexGhost1 = str(self.posGhost1)
-			elif(self.Pixels_info[key]["type"] == "AI"):
+			elif(self.data[key]["type"] == "AI"):
 				self.dbuffer.Set_Pixel(int(key), self.colorAIGhost , 1)
 				self.posAIGhost = int(key)
-				self.indexAIGhost = str(self.posGhost)
-			elif(self.Pixels_info[key]["type"] == "C"):
+				self.indexAIGhost = str(self.posAIGhost)
+			elif(self.data[key]["type"] == "C"):
 				self.dbuffer.Set_Pixel(int(key), self.colorCoins , 1)		
 
 
@@ -272,7 +270,7 @@ class CGame:
 			self.dbuffer.Set_Pixel(self.posGhost1, self.colorGhost, 1)
 	
 		self.indexGhost1 = str(self.posGhost1)
-		time.sleep(0.01)
+
 
 	
 
@@ -283,6 +281,7 @@ class CGame:
 	def ledRunningFunc(self):
 		
 		while 1:
+			print "LED Running Function"
 			#print "prev_pos,posPacMan",prev_pos, self.posPacMan
 			self.lock.acquire()
 			prev_pos = self.posPacMan
@@ -309,10 +308,11 @@ class CGame:
 
 					#Set Ghost's new position
 					self.dbuffer.Set_Pixel(self.posGhost1, self.colorGhost, 1)
-			self.aiGhost()		
+			#self.aiGhost()		
 			self.lock.release()
 			time.sleep(0.5)
 
+	'''
 	#this function will deal with the Artificial Ghost 
 	def aiGhost(self):
 		#put a lock here
@@ -347,7 +347,7 @@ class CGame:
 			#release a lock here
 			#self.lock.release()
 			#time.sleep(0.5)
-
+	'''
 
 
 if __name__ == '__main__':
@@ -357,29 +357,20 @@ if __name__ == '__main__':
 	#It will read all LEDs from JSON file. Depending upon their type, they will have different colors
 	app.load_layout()
 
-	print "Pacman position"+str(app.posPacMan)
-	#app.main()
-	refreshWin = threading.Thread(target=app.ledRunningFunc, args=[])
-	if(app.environment == ENV_DESKTOP):
-		refreshDesktop = threading.Thread(target=app.dbuffer.Start_Flushing, args=[])
-	threadMain = threading.Thread(target=app.main, args=[])
-	threadAIGhost = threading.Thread(target=app.aiGhost, args=[])
-	'''
-	refreshWin = tc.FuncThread(app.ledRunningFunc)
-	if(app.environment == ENV_DESKTOP):
-		refreshDesktop = tc.FuncThread(app.dbuffer.Start_Flushing)
-	threadMain = tc.FuncThread(app.main)
-	#threadAIGhost = tc.FuncThread(app.aiGhost)
-	'''
+	refreshWin = threading.Thread(target = app.ledRunningFunc, args = [])
+
+	threadMain = threading.Thread(target = app.main, args = [])
+
 	#Start threads
 	threadMain.start()
 	refreshWin.start()
-	threadAIGhost.start()
-	if(app.environment == ENV_DESKTOP):
-		refreshDesktop.start()
+	#threadAIGhost.start()
+	
 	#Join
 	#if(app.environment == ENV_DESKTOP):
 	#	refreshDesktop.join()
 	#refreshWin.join()
 	#threadMain.join()
 	#threadAIGhost.join()
+	if(app.environment == ENV_DESKTOP):
+		app.dbuffer.Start_Flushing()

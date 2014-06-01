@@ -1,4 +1,4 @@
-#from lib.bootstrap import *
+from lib.bootstrap import *
 import boot.readConfig as init 
 import pygame
 import thread
@@ -14,22 +14,22 @@ class Pixel:
 		self.x = x
 		self.y = y
 		self.color = color
-                self.state = state
+		self.state = state
 		self.LED = led
 
 class Display_Buffer:
-	def __init__(self, environment):
+	def __init__(self, environment, data):
 		
 		self.environment = environment	
 
 		#default color - white
 		color = (255,255,255)
-			
-        	#default state
-        	state = 0               
+
+		#default state
+		state = 0
  
 		#Get the Mapping of LED -to - Pixels
-		self.Pixels_info = init.read_pixel_info()
+		self.Pixels_info = data
 
 		#Initialize all the Pixels
 		self.Pixels = {}
@@ -39,28 +39,30 @@ class Display_Buffer:
 		
 		if(self.environment == ENV_LED):
 			#Initialize LED
-                	self.led = LEDStrip(320)
-                	self.led.setMasterBrightness(0.5)
+			self.led = LEDStrip(320)
+			self.led.setMasterBrightness(0.5)
+		else:
+			#Initialize the Screen
+			pygame.init()
+
+			# Set the height and width of the screen
+			size = [800, 800]
+			self.screen = pygame.display.set_mode(size)
+			pygame.display.set_caption("PacMan - Desktop")
+					
 
 	#This Method is called only when the environment is Desktop
 	#Incase of LEDs, periodic Flushing will result in blinking
 	def Start_Flushing(self):
 		print "In Flusher" + str(self.environment)		
 		if(self.environment == ENV_DESKTOP):
-			#Initialize the Screen
-			pygame.init()		
 
-			# Set the height and width of the screen
-			size = [600, 600]
-			screen = pygame.display.set_mode(size)
- 
-			pygame.display.set_caption("PacMan - Desktop")
- 
 			#Loop until the user clicks the close button.
 			done = False
 			clock = pygame.time.Clock()
  
 			while not done:
+				print "In Flushing function"
  
     				# This limits the while loop to a max of 10 times per second.
     				# Leave this out and we will use all CPU we can.
@@ -70,14 +72,15 @@ class Display_Buffer:
     				for event in pygame.event.get(): # User did something
         				if event.type == pygame.QUIT: # If user clicked close
             					done=True # Flag that we are done so we exit this loop
-                        	#Black background
-    				screen.fill([0, 0, 0])
+                
+				#Black background
+    				self.screen.fill([0, 0, 0])
                         
-                        	#Draw the Pixels
+                		#Draw the Pixels
 				keys = self.Pixels.keys()
-                        	for key in keys:
+                		for key in keys:
 					if(self.Pixels[key].state == 1):
-    						pygame.draw.circle(screen, self.Pixels[key].color, [(self.Pixels[key].x + 1) * 20, (self.Pixels[key].y + 1) * 20], 5, 0)
+    						pygame.draw.circle(self.screen, self.Pixels[key].color, [(self.Pixels[key].x + 1) * 15, (self.Pixels[key].y + 1) * 15], 3, 0)
 					
 		
     				# Go ahead and update the screen with what we've drawn.
