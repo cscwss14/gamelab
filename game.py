@@ -1,11 +1,8 @@
 #from lib.bootstrap import *
 import boot.readConfig as init 
-import pygame
-import os
-import time, threadClass as tc
-import displayBuffer as dbuff
+from lib import threadClass as tc, displayBuffer as dbuff,astarBBB as astar
+import pygame, os,time
 import sys, getopt, threading
-#import astarBBB as astar
 
 ENV_LED = 0
 ENV_DESKTOP = 1
@@ -57,7 +54,7 @@ class CGame:
 		self.lock = threading.Lock()
 		#Initialize the display buffer
 		self.dbuffer = dbuff.Display_Buffer(self.environment, self.data)
-		#self.aiPath = astar.CFindPath(self.data)	
+		self.aiPath = astar.CFindPath(self.data)	
 
 
 		#pygame.mixer.pre_init(44100, -16, 2, 2048) # setup mixer to avoid sound lag
@@ -154,54 +151,54 @@ class CGame:
 
 					if(jy_pos1_horizontal < 0 and int(self.data[self.indexPacMan]["left"]) != -1 ):
 						prev_pos = self.posPacMan
-				        	self.posPacMan = int(self.data[self.indexPacMan]["left"])
+				        	#self.posPacMan = int(self.data[self.indexPacMan]["left"])
 						self.direction_of_pacman = "left"
 						
 						#Set Off Pac-man's old position
-						self.dbuffer.Set_Pixel(prev_pos, (255, 255, 255), 1)
+						#self.dbuffer.Set_Pixel(prev_pos, (255, 255, 255), 1)
 
 						#Set Pac-man's new position
-						self.dbuffer.Set_Pixel(self.posPacMan, self.colorPacMan, 1)
+						#self.dbuffer.Set_Pixel(self.posPacMan, self.colorPacMan, 1)
 
 						#self.jump.play()
 				        elif(jy_pos1_horizontal > 0 and int(self.data[self.indexPacMan]["right"]) != -1 ):
 						prev_pos = self.posPacMan
-						self.posPacMan = int(self.data[self.indexPacMan]["right"])
+						#self.posPacMan = int(self.data[self.indexPacMan]["right"])
 						self.direction_of_pacman = "right"
 
 						#Set Off Pac-man's old position
-						self.dbuffer.Set_Pixel(prev_pos, (255, 255, 255), 1)
+						#self.dbuffer.Set_Pixel(prev_pos, (255, 255, 255), 1)
 
 						#Set Pac-man's new position
-						self.dbuffer.Set_Pixel(self.posPacMan, self.colorPacMan, 1)
+						#self.dbuffer.Set_Pixel(self.posPacMan, self.colorPacMan, 1)
 
 						#self.jump.play()
 					if(jy_pos1_vertical > 0 and int(self.data[self.indexPacMan]["down"]) != -1):
 						prev_pos = self.posPacMan
-						self.posPacMan = int(self.data[self.indexPacMan]["down"])
+						#self.posPacMan = int(self.data[self.indexPacMan]["down"])
 						self.direction_of_pacman = "down"
 
 						#Set Off Pac-man's old position
-						self.dbuffer.Set_Pixel(prev_pos, (255, 255, 255), 1)
+						#self.dbuffer.Set_Pixel(prev_pos, (255, 255, 255), 1)
 
 						#Set Pac-man's new position
-						self.dbuffer.Set_Pixel(self.posPacMan, self.colorPacMan, 1)
+						#self.dbuffer.Set_Pixel(self.posPacMan, self.colorPacMan, 1)
 
 						#self.jump.play()
 					elif(jy_pos1_vertical < 0 and int(self.data[self.indexPacMan]["up"]) != -1):
 						prev_pos = self.posPacMan
-						self.posPacMan = int(self.data[self.indexPacMan]["up"])
+						#self.posPacMan = int(self.data[self.indexPacMan]["up"])
 						self.direction_of_pacman = "up"
 
 						#Set Off Pac-man's old position
-						self.dbuffer.Set_Pixel(prev_pos, (255, 255, 255), 1)
+						#self.dbuffer.Set_Pixel(prev_pos, (255, 255, 255), 1)
 
 						#Set Pac-man's new position
-						self.dbuffer.Set_Pixel(self.posPacMan, self.colorPacMan, 1)
+						#self.dbuffer.Set_Pixel(self.posPacMan, self.colorPacMan, 1)
 
 						#self.jump.play()
 
-			self.indexPacMan = str(self.posPacMan)
+			#self.indexPacMan = str(self.posPacMan)
 
 
 			'''
@@ -312,42 +309,32 @@ class CGame:
 			self.lock.release()
 			time.sleep(0.5)
 
-	'''
+	
 	#this function will deal with the Artificial Ghost 
 	def aiGhost(self):
-		#put a lock here
-		#while 1:
-			
-			#self.lock.acquire()
+		while 1:
+			#print "aiGhost scheduled"
+			self.lock.acquire()
 			index = 0 
 			destination = str(self.posPacMan)
 			source = str(self.posAIGhost)
 			#This takes only string, so converted to string
 			path = self.aiPath.findPath(source, destination)
-			print "path",path
+			#print "path",path
 			nextPosGhost = path[index+1]
-			print "nexPosGhost",nextPosGhost,self.posAIGhost	
+			#print "nexPosGhost",nextPosGhost,self.posAIGhost	
 			#Set Off ghost's old position
 			self.dbuffer.Set_Pixel(self.posAIGhost, (255, 255, 255), 1)
 			
 			#Set ghost's new position
 			self.posAIGhost = int(nextPosGhost)
-			self.dbuffer.Set_Pixel(self.posAIGhost, self.colorAIGhost, 1)
-			
-			nextPosGhost = path[index+2]
-			print "nexPosGhost2",nextPosGhost,self.posAIGhost	
-					
-			#Set Off ghost's old position
-			self.dbuffer.Set_Pixel(self.posAIGhost, (255, 255, 255), 1)
-			#Set ghost's new position
-			self.posAIGhost = int(nextPosGhost)
-			#this takes on integer , so typecasted it
 			self.dbuffer.Set_Pixel(self.posAIGhost, self.colorAIGhost, 1)
 			
 			#release a lock here
-			#self.lock.release()
-			#time.sleep(0.5)
-	'''
+			self.lock.release()
+			#This delay should be similar to ledRunning function so as to keep the speed constant
+			time.sleep(0.5)
+	
 
 
 if __name__ == '__main__':
@@ -360,11 +347,11 @@ if __name__ == '__main__':
 	refreshWin = threading.Thread(target = app.ledRunningFunc, args = [])
 
 	threadMain = threading.Thread(target = app.main, args = [])
-
+	threadAIGhost = threading.Thread(target=app.aiGhost , args=[])
 	#Start threads
 	threadMain.start()
+	threadAIGhost.start()
 	refreshWin.start()
-	#threadAIGhost.start()
 	
 	#Join
 	#if(app.environment == ENV_DESKTOP):
