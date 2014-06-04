@@ -266,7 +266,7 @@ class CGame:
 	
 			self.dbuffer.Set_Pixel(self.posGhost1, self.colorGhost, 1)
 	
-		self.indexGhost1 = str(self.posGhost1)
+		#self.indexGhost1 = str(self.posGhost1)
 
 
 	
@@ -318,17 +318,19 @@ class CGame:
 			index = 0 
 			destination = str(self.posPacMan)
 			source = str(self.posAIGhost)
-			#This takes only string, so converted to string
-			path = self.aiPath.findPath(source, destination)
-			#print "path",path
-			nextPosGhost = path[index+1]
-			#print "nexPosGhost",nextPosGhost,self.posAIGhost	
-			#Set Off ghost's old position
-			self.dbuffer.Set_Pixel(self.posAIGhost, (255, 255, 255), 1)
+			#Calculate only if the source and destination are different
+			if not (source == destination):
+				#This takes only string, so converted to string
+				path = self.aiPath.findPath(source, destination)
+				#print "path",path
+				nextPosGhost = path[index+1]
+				#print "nexPosGhost",nextPosGhost,self.posAIGhost	
+				#Set Off ghost's old position
+				self.dbuffer.Set_Pixel(self.posAIGhost, (255, 255, 255), 1)
 			
-			#Set ghost's new position
-			self.posAIGhost = int(nextPosGhost)
-			self.dbuffer.Set_Pixel(self.posAIGhost, self.colorAIGhost, 1)
+				#Set ghost's new position
+				self.posAIGhost = int(nextPosGhost)
+				self.dbuffer.Set_Pixel(self.posAIGhost, self.colorAIGhost, 1)
 			
 			#release a lock here
 			self.lock.release()
