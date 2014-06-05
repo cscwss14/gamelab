@@ -151,51 +151,22 @@ class CGame:
 
 					if(jy_pos1_horizontal < 0 and int(self.data[self.indexPacMan]["left"]) != -1 ):
 						prev_pos = self.posPacMan
-				        	#self.posPacMan = int(self.data[self.indexPacMan]["left"])
 						self.direction_of_pacman = "left"
-						
-						#Set Off Pac-man's old position
-						#self.dbuffer.Set_Pixel(prev_pos, (255, 255, 255), 1)
-
-						#Set Pac-man's new position
-						#self.dbuffer.Set_Pixel(self.posPacMan, self.colorPacMan, 1)
 
 						#self.jump.play()
 				        elif(jy_pos1_horizontal > 0 and int(self.data[self.indexPacMan]["right"]) != -1 ):
 						prev_pos = self.posPacMan
-						#self.posPacMan = int(self.data[self.indexPacMan]["right"])
 						self.direction_of_pacman = "right"
-
-						#Set Off Pac-man's old position
-						#self.dbuffer.Set_Pixel(prev_pos, (255, 255, 255), 1)
-
-						#Set Pac-man's new position
-						#self.dbuffer.Set_Pixel(self.posPacMan, self.colorPacMan, 1)
 
 						#self.jump.play()
 					if(jy_pos1_vertical > 0 and int(self.data[self.indexPacMan]["down"]) != -1):
 						prev_pos = self.posPacMan
-						#self.posPacMan = int(self.data[self.indexPacMan]["down"])
 						self.direction_of_pacman = "down"
-
-						#Set Off Pac-man's old position
-						#self.dbuffer.Set_Pixel(prev_pos, (255, 255, 255), 1)
-
-						#Set Pac-man's new position
-						#self.dbuffer.Set_Pixel(self.posPacMan, self.colorPacMan, 1)
 
 						#self.jump.play()
 					elif(jy_pos1_vertical < 0 and int(self.data[self.indexPacMan]["up"]) != -1):
 						prev_pos = self.posPacMan
-						#self.posPacMan = int(self.data[self.indexPacMan]["up"])
 						self.direction_of_pacman = "up"
-
-						#Set Off Pac-man's old position
-						#self.dbuffer.Set_Pixel(prev_pos, (255, 255, 255), 1)
-
-						#Set Pac-man's new position
-						#self.dbuffer.Set_Pixel(self.posPacMan, self.colorPacMan, 1)
-
 						#self.jump.play()
 
 			#self.indexPacMan = str(self.posPacMan)
@@ -313,18 +284,21 @@ class CGame:
 	#this function will deal with the Artificial Ghost 
 	def aiGhost(self):
 		while 1:
-			#print "aiGhost scheduled"
+			
+			
 			self.lock.acquire()
-			index = 0 
+			
 			destination = str(self.posPacMan)
 			source = str(self.posAIGhost)
+			
 			#Calculate only if the source and destination are different
 			if not (source == destination):
+			
 				#This takes only string, so converted to string
 				path = self.aiPath.findPath(source, destination)
-				#print "path",path
-				nextPosGhost = path[index+1]
-				#print "nexPosGhost",nextPosGhost,self.posAIGhost	
+				#assign index 1 to the nextPosition of ghost as path[0] is the source iteself
+				nextPosGhost = path[1]
+			
 				#Set Off ghost's old position
 				self.dbuffer.Set_Pixel(self.posAIGhost, (255, 255, 255), 1)
 			
@@ -334,6 +308,7 @@ class CGame:
 			
 			#release a lock here
 			self.lock.release()
+			
 			#This delay should be similar to ledRunning function so as to keep the speed constant
 			time.sleep(0.5)
 	
