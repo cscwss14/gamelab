@@ -1,25 +1,27 @@
-#from lib.bootstrap import *
 import boot.readConfig as init 
 from lib import threadClass as tc, displayBuffer as dbuff,astarBBB as astar
 import pygame, os,time
 import sys, getopt, threading
 
-ENV_LED = 0
-ENV_DESKTOP = 1
+class Environment:
+	ENV_LED, ENV_DESKTOP = range(0,2)
 
+class GameState:
+	NOT_STARTED, RUNNING, PAUSED, RESETTED, STOPPED = range(0, 5)
+	
 #Default Environment
-environment = ENV_LED
+environment = Environment.ENV_LED
 
 #Command Line Arguments
 if(len(sys.argv) > 1):
         if(str(sys.argv[1]) == '-h'):
                 print "Game running on LED"
-                environment = ENV_LED
+                environment = Environment.ENV_LED
 		from lib.bootstrap import *
 
         elif(str(sys.argv[1]) == '-d'):
                 print "Game running on DESKTOP"
-                environment = ENV_DESKTOP
+                environment = Environment.ENV_DESKTOP
 
 
 class CGame:
@@ -43,6 +45,7 @@ class CGame:
 		self.posAIGhost = "72"
 		self.direction_of_AIGhost = "up"
 		self.colorAIGhost = (0,0,255)
+		self.gameState = GameState.NOT_STARTED
 
 		#change the default direction of ghost
 		self.direction_of_ghost1 = "up"	
@@ -57,7 +60,7 @@ class CGame:
 		self.aiPath = astar.CFindPath(self.data)	
 
 
-		#pygame.mixer.pre_init(44100, -16, 2, 2048) # setup mixer to avoid sound lag
+		pygame.mixer.pre_init(44100, -16, 2, 2048) # setup mixer to avoid sound lag
 		pygame.init()                              #initialize pygame
 
 		#We need to setup the display. Otherwise, pygame events will not work
@@ -65,12 +68,12 @@ class CGame:
 		pygame.display.set_mode(screen_size)
 
 		# look for sound & music files in subfolder 'data'
-		#pygame.mixer.music.load(os.path.join('data', 'an-turr.ogg'))#load music
-		#self.jump = pygame.mixer.Sound(os.path.join('data','jump.wav'))  #load sound
-		#self.fail = pygame.mixer.Sound(os.path.join('data','fail.wav'))  #load sound
+		pygame.mixer.music.load(os.path.join('data', 'an-turr.ogg'))#load music
+		self.jump = pygame.mixer.Sound(os.path.join('data','jump.wav'))  #load sound
+		self.fail = pygame.mixer.Sound(os.path.join('data','fail.wav'))  #load sound
 
 		# play music non-stop
-		#pygame.mixer.music.play(-1)
+		pygame.mixer.music.play(-1)
 
 		#Initialize the Joysticks
 		pygame.joystick.init()
@@ -121,7 +124,9 @@ class CGame:
 		quit = False
 
 		clock = pygame.time.Clock()
-
+		
+		print "Press Start Button to start playing.."
+		
 		while (quit != True):
 		    	'''
 			if pygame.mixer.music.get_busy():
@@ -134,42 +139,51 @@ class CGame:
 		        for event in pygame.event.get():
 			    	if event.type == pygame.QUIT:
 			        	quit = True
-			    	if event.type == pygame.JOYAXISMOTION:
-			        	print("Axis Moved...")
-			        	#Joystick1 position
-				        jy_pos1_horizontal = self.Joystick1.get_axis(0)
-					jy_pos1_vertical = self.Joystick1.get_axis(1)
+				if event.type == pygame.JOYBUTTONDOWN:
+					#If the start button is pressed and game is stopped, start the game
+					if event.button == 9  and self.gameState == GameState.NOT_STARTED:
+						self.gameState = GameState.RUNNING
+						#Load the array of LEDs to be used for first boot for displaying coins
+						#It will read all LEDs from JSON file. Depending upon their type, they will have different colors
+						app.load_layout()
+						print "Game is running now.."
 					
-					if (self.twoJSPresent == True):
-			        		#Joystick2 position
-				        	jy_pos2_horizontal = self.Joystick2.get_axis(0)
-						jy_pos2_vertical = self.Joystick2.get_axis(1)
+				#Track the PacMan and Ghost only if the game is RUNNING
+				if self.gameState == GameState.RUNNING:
+					if event.type == pygame.JOYAXISMOTION:
+						print("Axis Moved...")
+						#Joystick1 position
+						jy_pos1_horizontal = self.Joystick1.get_axis(0)
+						jy_pos1_vertical = self.Joystick1.get_axis(1)
 					
-						self.handleJoystickTwo(jy_pos2_horizontal,jy_pos2_vertical)		 
+						if (self.twoJSPresent == True):
+							#Joystick2 position
+							jy_pos2_horizontal = self.Joystick2.get_axis(0)
+							jy_pos2_vertical = self.Joystick2.get_axis(1)
+					
+							self.handleJoystickTwo(jy_pos2_horizontal,jy_pos2_vertical)		 
 
+						if(jy_pos1_horizontal < 0 and int(self.data[self.indexPacMan]["left"]) != -1 ):
+							prev_pos = self.posPacMan
+							self.direction_of_pacman = "left"
 
+							self.jump.play()
+						elif(jy_pos1_horizontal > 0 and int(self.data[self.indexPacMan]["right"]) != -1 ):
+							prev_pos = self.posPacMan
+							self.direction_of_pacman = "right"
 
-					if(jy_pos1_horizontal < 0 and int(self.data[self.indexPacMan]["left"]) != -1 ):
-						prev_pos = self.posPacMan
-						self.direction_of_pacman = "left"
+							self.jump.play()
+						if(jy_pos1_vertical > 0 and int(self.data[self.indexPacMan]["down"]) != -1):
+							prev_pos = self.posPacMan
+							self.direction_of_pacman = "down"
 
-						#self.jump.play()
-				        elif(jy_pos1_horizontal > 0 and int(self.data[self.indexPacMan]["right"]) != -1 ):
-						prev_pos = self.posPacMan
-						self.direction_of_pacman = "right"
+							self.jump.play()
+						elif(jy_pos1_vertical < 0 and int(self.data[self.indexPacMan]["up"]) != -1):
+							prev_pos = self.posPacMan
+							self.direction_of_pacman = "up"
+							self.jump.play()
 
-						#self.jump.play()
-					if(jy_pos1_vertical > 0 and int(self.data[self.indexPacMan]["down"]) != -1):
-						prev_pos = self.posPacMan
-						self.direction_of_pacman = "down"
-
-						#self.jump.play()
-					elif(jy_pos1_vertical < 0 and int(self.data[self.indexPacMan]["up"]) != -1):
-						prev_pos = self.posPacMan
-						self.direction_of_pacman = "up"
-						#self.jump.play()
-
-			#self.indexPacMan = str(self.posPacMan)
+							#self.indexPacMan = str(self.posPacMan)
 
 
 			'''
@@ -195,20 +209,20 @@ class CGame:
 			
 			self.direction_of_ghost = "left"
 				
-			#Set Off Pac-man's old position
+			#Set Off Ghost's old position
 			self.dbuffer.Set_Pixel(prev_posGhost1, (255, 255, 255), 1)
-			#Set Pac-man's new position
+			#Set Ghost's new position
 			self.dbuffer.Set_Pixel(self.posGhost1, self.colorGhost, 1)
-
-	       	elif(jy_pos2_horizontal > 0 and int(self.data[self.indexGhost1]["right"]) != -1 ):
+		
+		elif(jy_pos2_horizontal > 0 and int(self.data[self.indexGhost1]["right"]) != -1 ):
 			print "right pressed"
 			print "self.posGhost1",self.posGhost1					
 			prev_posGhost1 = self.posGhost1
 			self.posGhost1 = int(self.data[self.indexGhost1]["right"])
 			self.direction_of_ghost = "right"
-			#Set Off Pac-man's old position
+			#Set Ghost's old position
 			self.dbuffer.Set_Pixel(prev_posGhost1, (255, 255, 255), 1)
-			#Set Pac-man's new position
+			#Set Ghost's new position
 			self.dbuffer.Set_Pixel(self.posGhost1, self.colorGhost, 1)
 
 						
@@ -218,9 +232,9 @@ class CGame:
 			prev_posGhost1 = self.posGhost1
 			self.posGhost1 = int(self.data[self.indexGhost1]["down"])
 			self.direction_of_ghost = "down"
-			#Set Off Pac-man's old position
+			#Set Ghost's old position
 			self.dbuffer.Set_Pixel(prev_posGhost1, (255, 255, 255), 1)
-			#Set Pac-man's new position
+			#Set Ghost's new position
 			self.dbuffer.Set_Pixel(self.posGhost1, self.colorGhost, 1)
 
 						
@@ -230,18 +244,12 @@ class CGame:
 			prev_posGhost1 = self.posGhost1
 			self.posGhost1 = int(self.data[self.indexGhost1]["up"])
 			self.direction_of_ghost = "up"
-			#Set Off Pac-man's old position
+			#Set Off Ghost's old position
 			self.dbuffer.Set_Pixel(prev_posGhost1, (255, 255, 255), 1)
-	
-			#Set Pac-man's new position
-	
+			#Set Ghost's new position
 			self.dbuffer.Set_Pixel(self.posGhost1, self.colorGhost, 1)
 	
 		#self.indexGhost1 = str(self.posGhost1)
-
-
-	
-
 
 
 
@@ -249,92 +257,88 @@ class CGame:
 	def ledRunningFunc(self):
 		
 		while 1:
-			print "LED Running Function"
-			#print "prev_pos,posPacMan",prev_pos, self.posPacMan
-			self.lock.acquire()
-			prev_pos = self.posPacMan
-			if (int(self.data[self.indexPacMan][self.direction_of_pacman]) != -1):
-				self.posPacMan = int(self.data[self.indexPacMan][self.direction_of_pacman])
-				self.indexPacMan = str(self.posPacMan)
-				
-				
-				#Set Off Pac-man's old position
-				self.dbuffer.Set_Pixel(prev_pos, (255, 255, 255), 1)
-
-				#Set Pac-man's new position
-				self.dbuffer.Set_Pixel(self.posPacMan, self.colorPacMan, 1)
-			
-			if (self.twoJSPresent == True):
-				prev_pos = self.posGhost1
-				if (int(self.data[self.indexGhost1][self.direction_of_ghost]) != -1):
-					self.posGhost1 = int(self.data[self.indexGhost1][self.direction_of_ghost])
-					self.indexGhost1 = str(self.posGhost1)
-				
-				
-					#Set Off Ghost's old position
+			print "LED Running Function"		
+			#Do only when game is RUNNING
+			if self.gameState == GameState.RUNNING:
+				self.lock.acquire()
+				prev_pos = self.posPacMan
+				if (int(self.data[self.indexPacMan][self.direction_of_pacman]) != -1):
+					self.posPacMan = int(self.data[self.indexPacMan][self.direction_of_pacman])
+					self.indexPacMan = str(self.posPacMan)
+					
+					
+					#Set Off Pac-man's old position
 					self.dbuffer.Set_Pixel(prev_pos, (255, 255, 255), 1)
 
-					#Set Ghost's new position
-					self.dbuffer.Set_Pixel(self.posGhost1, self.colorGhost, 1)
-			#self.aiGhost()		
-			self.lock.release()
+					#Set Pac-man's new position
+					self.dbuffer.Set_Pixel(self.posPacMan, self.colorPacMan, 1)
+				
+				if (self.twoJSPresent == True):
+					prev_pos = self.posGhost1
+					if (int(self.data[self.indexGhost1][self.direction_of_ghost]) != -1):
+						self.posGhost1 = int(self.data[self.indexGhost1][self.direction_of_ghost])
+						self.indexGhost1 = str(self.posGhost1)
+					
+					
+						#Set Off Ghost's old position
+						self.dbuffer.Set_Pixel(prev_pos, (255, 255, 255), 1)
+
+						#Set Ghost's new position
+						self.dbuffer.Set_Pixel(self.posGhost1, self.colorGhost, 1)
+				#self.aiGhost()		
+				self.lock.release()
+				
 			time.sleep(0.5)
 
 	
 	#this function will deal with the Artificial Ghost 
 	def aiGhost(self):
 		while 1:
-			
-			
-			self.lock.acquire()
-			
-			destination = str(self.posPacMan)
-			source = str(self.posAIGhost)
-			
-			#Calculate only if the source and destination are different
-			if not (source == destination):
-			
-				#This takes only string, so converted to string
-				path = self.aiPath.findPath(source, destination)
-				#assign index 1 to the nextPosition of ghost as path[0] is the source iteself
-				nextPosGhost = path[1]
-			
-				#Set Off ghost's old position
-				self.dbuffer.Set_Pixel(self.posAIGhost, (255, 255, 255), 1)
-			
-				#Set ghost's new position
-				self.posAIGhost = int(nextPosGhost)
-				self.dbuffer.Set_Pixel(self.posAIGhost, self.colorAIGhost, 1)
-			
-			#release a lock here
-			self.lock.release()
-			
+			#Do only when game is RUNNING
+			if self.gameState == GameState.RUNNING:
+				self.lock.acquire()
+				
+				destination = str(self.posPacMan)
+				source = str(self.posAIGhost)
+				
+				#Calculate only if the source and destination are different
+				if not (source == destination):
+				
+					#This takes only string, so converted to string
+					path = self.aiPath.findPath(source, destination)
+					#assign index 1 to the nextPosition of ghost as path[0] is the source iteself
+					nextPosGhost = path[1]
+				
+					#Set Off ghost's old position
+					self.dbuffer.Set_Pixel(self.posAIGhost, (255, 255, 255), 1)
+				
+					#Set ghost's new position
+					self.posAIGhost = int(nextPosGhost)
+					self.dbuffer.Set_Pixel(self.posAIGhost, self.colorAIGhost, 1)
+				
+				#release a lock here
+				self.lock.release()
+				
 			#This delay should be similar to ledRunning function so as to keep the speed constant
 			time.sleep(0.5)
-	
-
 
 if __name__ == '__main__':
 	app = CGame(environment)
-	#Load the array of LEDs to be used for first boot for displaying coins
-	#To implement, right now initializing everything
-	#It will read all LEDs from JSON file. Depending upon their type, they will have different colors
-	app.load_layout()
-
+	
+	#Create threads
 	refreshWin = threading.Thread(target = app.ledRunningFunc, args = [])
-
 	threadMain = threading.Thread(target = app.main, args = [])
 	threadAIGhost = threading.Thread(target=app.aiGhost , args=[])
+	
 	#Start threads
 	threadMain.start()
 	threadAIGhost.start()
 	refreshWin.start()
 	
-	#Join
-	#if(app.environment == ENV_DESKTOP):
-	#	refreshDesktop.join()
-	#refreshWin.join()
-	#threadMain.join()
-	#threadAIGhost.join()
-	if(app.environment == ENV_DESKTOP):
+	if(app.environment == Environment.ENV_DESKTOP):
 		app.dbuffer.Start_Flushing()
+	else:
+		threadMain.join()
+		threadAIGhost.join()
+		refreshWin.join()
+		

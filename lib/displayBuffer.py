@@ -5,8 +5,8 @@ import thread
 import time
 import multiprocessing 
 
-ENV_LED = 0
-ENV_DESKTOP = 1
+class Environment:
+	ENV_LED, ENV_DESKTOP = range(0,2)
 
 #Pixel Class - For Storing information about each pixel
 class Pixel:
@@ -37,7 +37,7 @@ class Display_Buffer:
 		for key in keys:
 			self.Pixels[key] = Pixel(int(key), int(self.Pixels_info[key]["x"]), int(self.Pixels_info[key]["y"]), color, state)
 		
-		if(self.environment == ENV_LED):
+		if(self.environment == Environment.ENV_LED):
 			#Initialize LED
 			self.led = LEDStrip(320)
 			self.led.setMasterBrightness(0.5)
@@ -55,7 +55,7 @@ class Display_Buffer:
 	#Incase of LEDs, periodic Flushing will result in blinking
 	def Start_Flushing(self):
 		print "In Flusher" + str(self.environment)		
-		if(self.environment == ENV_DESKTOP):
+		if(self.environment == Environment.ENV_DESKTOP):
 
 			#Loop until the user clicks the close button.
 			done = False
@@ -104,22 +104,22 @@ class Display_Buffer:
 
 	def Set_Pixel_State(self, pixel, state):
 		#Find the Pixel corresponding to the LED
-		 self.Pixels[str(pixel)].state = state
+		self.Pixels[str(pixel)].state = state
 		
-		 #Push Immediately when environment is LED, otherwise for desktop need not do nothing
-                 #Because it is refreshed periodically
-                 if(self.environment == ENV_LED):
-                 	self.Push_to_Led(self.Pixels[str(pixel)])
+		#Push Immediately when environment is LED, otherwise for desktop need not do nothing
+         	#Because it is refreshed periodically
+         	if(self.environment == Environment.ENV_LED):
+			self.Push_to_Led(self.Pixels[str(pixel)])
 
 	def Set_Pixel_Color(self, pixel, color):
 		#Find the Pixel corresponding to the LED
-		 self.Pixels[str(pixel)].color = color
+		self.Pixels[str(pixel)].color = color
 		 
 		
-		 #Push Immediately when environment is LED, otherwise for desktop need not do nothing
-                 #Because it is refreshed periodically
-                 if(self.environment == ENV_LED):
-                 	self.Push_to_Led(self.Pixels[str(pixel)])
+		#Push Immediately when environment is LED, otherwise for desktop need not do nothing
+         	#Because it is refreshed periodically
+         	if(self.environment == Environment.ENV_LED):
+			self.Push_to_Led(self.Pixels[str(pixel)])
 
 	def Set_Pixel(self, pixel, color, state):
 		 #Find the Pixel corresponding to the LED
@@ -127,6 +127,6 @@ class Display_Buffer:
 		 self.Pixels[str(pixel)].state = state
 		
 		 #Push Immediately when environment is LED, otherwise for desktop need not do nothing
-                 #Because it is refreshed periodically
-                 if(self.environment == ENV_LED):
-                 	self.Push_to_Led(self.Pixels[str(pixel)])
+         	 #Because it is refreshed periodically
+         	 if(self.environment == Environment.ENV_LED):
+		 	self.Push_to_Led(self.Pixels[str(pixel)])
