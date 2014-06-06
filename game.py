@@ -141,12 +141,47 @@ class CGame:
 			        	quit = True
 				if event.type == pygame.JOYBUTTONDOWN:
 					#If the start button is pressed and game is stopped, start the game
-					if event.button == 9  and self.gameState == GameState.NOT_STARTED:
-						self.gameState = GameState.RUNNING
+					if event.button == 1  and self.gameState == GameState.NOT_STARTED:
 						#Load the array of LEDs to be used for first boot for displaying coins
 						#It will read all LEDs from JSON file. Depending upon their type, they will have different colors
 						app.load_layout()
+						
+
+						#Wait for 2 seconds
+						time.sleep(2)
+
+						#Flash the Pac Man and Ghost 5 times
+						for i in range(0,5):
+							self.dbuffer.Set_Pixel(self.indexPacMan, (255, 255, 255), 1)
+							self.dbuffer.Set_Pixel(self.indexGhost1, (255, 255, 255), 1)
+							self.dbuffer.Set_Pixel(self.posAIGhost, (255, 255, 255), 1) 
+							time.sleep(1)
+							self.dbuffer.Set_Pixel(self.indexPacMan, self.colorPacMan, 1)
+							self.dbuffer.Set_Pixel(self.indexGhost1, self.colorGhost, 1)
+							self.dbuffer.Set_Pixel(self.posAIGhost, self.colorAIGhost, 1)
+							time.sleep(1)
+						
+						#Change the game state to RUNNING
+						self.gameState = GameState.RUNNING
+
+						#Start the PacMan Sound
 						print "Game is running now.."
+
+					#If the pause button is pressed and game is running, pause the game
+					if event.button == 2 and self.gameState == GameState.RUNNING:
+						#Stop the game sound
+			
+						#Change the game state to PAUSED
+						self.gameState = GameState.PAUSED
+					
+					#If the start button is pressed and game is running, pause the game
+					if event.button == 1 and self.gameState == GameState.PAUSED:
+						#Start the game sound
+			
+						#Change the game state to RUNNING
+						self.gameState = GameState.RUNNING
+
+								
 					
 				#Track the PacMan and Ghost only if the game is RUNNING
 				if self.gameState == GameState.RUNNING:
