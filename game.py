@@ -44,13 +44,13 @@ class CGame:
 		self.direction_of_ghost = "down"	
 		self.posAIGhost = "72"
 		self.direction_of_AIGhost = "up"
-		self.colorAIGhost = (0,0,255)
+		self.colorAIGhost = (221,118,2)
 		self.gameState = GameState.NOT_STARTED
 
 		#change the default direction of ghost
 		self.direction_of_ghost1 = "up"	
 		self.environment = environment
-		self.colorPacMan = (0, 255, 0)
+		self.colorPacMan = (255, 255, 0)
 		self.colorGhost = (255, 0, 0)
 		self.colorCoins = (255,255,255)
 		self.twoJSPresent = False
@@ -64,16 +64,13 @@ class CGame:
 		pygame.init()                              #initialize pygame
 
 		#We need to setup the display. Otherwise, pygame events will not work
-		screen_size = [500, 500]
+		screen_size = [800, 800]
 		pygame.display.set_mode(screen_size)
+               
 
 		# look for sound & music files in subfolder 'data'
-		pygame.mixer.music.load(os.path.join('data', 'an-turr.ogg'))#load music
-		self.jump = pygame.mixer.Sound(os.path.join('data','jump.wav'))  #load sound
-		self.fail = pygame.mixer.Sound(os.path.join('data','fail.wav'))  #load sound
-
-		# play music non-stop
-		pygame.mixer.music.play(-1)
+		self.chomp = pygame.mixer.Sound(os.path.join('data','pacman_chomp.wav'))  #load sound
+		               
 
 		#Initialize the Joysticks
 		pygame.joystick.init()
@@ -117,6 +114,18 @@ class CGame:
 			elif(self.data[key]["type"] == "C"):
 				self.dbuffer.Set_Pixel(int(key), self.colorCoins , 1)		
 
+	def reset_game(self):
+		#Reset all the variables
+		self.posPacMan = 1
+                self.posGhost1 = 1
+		self.posAIGhost = "72"
+                self.indexPacMan = str(self.posPacMan)
+                self.indexGhost1 = str(self.posGhost1)
+                self.direction_of_pacman = "up" 
+                self.direction_of_ghost = "down"
+                self.direction_of_AIGhost = "up"
+                
+
 
 	def main(self):		
 		prev_posPacman = self.posPacMan
@@ -141,46 +150,97 @@ class CGame:
 			        	quit = True
 				if event.type == pygame.JOYBUTTONDOWN:
 					#If the start button is pressed and game is stopped, start the game
-					if event.button == 1  and self.gameState == GameState.NOT_STARTED:
-						#Load the array of LEDs to be used for first boot for displaying coins
-						#It will read all LEDs from JSON file. Depending upon their type, they will have different colors
-						app.load_layout()
+					if self.gameState == GameState.NOT_STARTED:
+						if event.button == 1:
+							#Load the array of LEDs to be used for first boot for displaying coins
+							#It will read all LEDs from JSON file. Depending upon their type, they will have different colors
+							app.load_layout()
+							
+							#Start the PacMan Sound
+							pygame.mixer.music.load(os.path.join('data', 'pacman_beginning.wav'))
+							pygame.mixer.music.play(-1)
+
+							#Wait for 2 seconds
+							time.sleep(2)
+
+							#Flash the Pac Man and Ghost 3 times
+							for i in range(0,3):
+								self.dbuffer.Set_Pixel(self.indexPacMan, (255, 255, 255), 1)
+								self.dbuffer.Set_Pixel(self.indexGhost1, (255, 255, 255), 1)
+								self.dbuffer.Set_Pixel(self.posAIGhost, (255, 255, 255), 1) 
+								time.sleep(1)
+								self.dbuffer.Set_Pixel(self.indexPacMan, self.colorPacMan, 1)
+								self.dbuffer.Set_Pixel(self.indexGhost1, self.colorGhost, 1)
+								self.dbuffer.Set_Pixel(self.posAIGhost, self.colorAIGhost, 1)
+								time.sleep(1)
 						
+							#Change the game state to RUNNING
+							self.gameState = GameState.RUNNING
+							
+							#Stop the intro sound
+							pygame.mixer.music.stop()
 
-						#Wait for 2 seconds
-						time.sleep(2)
-
-						#Flash the Pac Man and Ghost 5 times
-						for i in range(0,5):
-							self.dbuffer.Set_Pixel(self.indexPacMan, (255, 255, 255), 1)
-							self.dbuffer.Set_Pixel(self.indexGhost1, (255, 255, 255), 1)
-							self.dbuffer.Set_Pixel(self.posAIGhost, (255, 255, 255), 1) 
-							time.sleep(1)
-							self.dbuffer.Set_Pixel(self.indexPacMan, self.colorPacMan, 1)
-							self.dbuffer.Set_Pixel(self.indexGhost1, self.colorGhost, 1)
-							self.dbuffer.Set_Pixel(self.posAIGhost, self.colorAIGhost, 1)
-							time.sleep(1)
-						
-						#Change the game state to RUNNING
-						self.gameState = GameState.RUNNING
-
-						#Start the PacMan Sound
-						print "Game is running now.."
-
-					#If the pause button is pressed and game is running, pause the game
-					if event.button == 2 and self.gameState == GameState.RUNNING:
-						#Stop the game sound
-			
-						#Change the game state to PAUSED
-						self.gameState = GameState.PAUSED
+							print "Game is running now.."
 					
-					#If the start button is pressed and game is running, pause the game
-					if event.button == 1 and self.gameState == GameState.PAUSED:
-						#Start the game sound
+					elif self.gameState == GameState.RUNNING:
+						#If the pause button is pressed and game is running, pause the game
+						if event.button == 2:
+							#Pause the game sound
+							pygame.mixer.music.pause()
 			
-						#Change the game state to RUNNING
-						self.gameState = GameState.RUNNING
+							#Change the game state to PAUSED
+							self.gameState = GameState.PAUSED
+						
+						#If the reset button is pressed and game is running, reset the game
+						if event.button == 3:
+							#Change the game state to RESETTED		
+							self.gameState = GameState.RESETTED
 
+							#Stop the game sound
+							pygame.mixer.music.stop()
+
+							#Reset the layout	
+							keys = self.data.keys()
+                					for key in keys: 
+								self.dbuffer.Set_Pixel(int(key), (255, 0, 0) , 0)
+
+							#Sleep for 2 seconds
+							time.sleep(2)
+			
+							#Load the layout again
+							self.load_layout()
+			
+							#Start the PacMan Sound
+							pygame.mixer.music.load(os.path.join('data', 'pacman_beginning.wav'))
+							pygame.mixer.music.play(-1)
+		
+							#Start flashing the Pac-Man and Ghost 3 times
+                                                        for i in range(0,3):
+                                                                self.dbuffer.Set_Pixel(self.indexPacMan, (255, 255, 255), 1)
+                                                                self.dbuffer.Set_Pixel(self.indexGhost1, (255, 255, 255), 1)
+                                                                self.dbuffer.Set_Pixel(self.posAIGhost, (255, 255, 255), 1)
+                                                                time.sleep(1)
+                                                                self.dbuffer.Set_Pixel(self.indexPacMan, self.colorPacMan, 1)
+                                                                self.dbuffer.Set_Pixel(self.indexGhost1, self.colorGhost, 1)
+                                                                self.dbuffer.Set_Pixel(self.posAIGhost, self.colorAIGhost, 1)
+                                                                time.sleep(1)
+							
+							#Stop the intro sound
+							pygame.mixer.music.stop()							
+
+							#Change the game state to RUNNING
+							self.gameState = GameState.RUNNING
+					
+					#If the start button is pressed and game is paused, resume the game
+					elif self.gameState == GameState.PAUSED:
+						if event.button == 1:
+							#Start the game sound
+							pygame.mixer.music.unpause()
+
+							#Change the game state to RUNNING
+							self.gameState = GameState.RUNNING
+
+					
 								
 					
 				#Track the PacMan and Ghost only if the game is RUNNING
@@ -202,32 +262,19 @@ class CGame:
 							prev_pos = self.posPacMan
 							self.direction_of_pacman = "left"
 
-							self.jump.play()
 						elif(jy_pos1_horizontal > 0 and int(self.data[self.indexPacMan]["right"]) != -1 ):
 							prev_pos = self.posPacMan
 							self.direction_of_pacman = "right"
 
-							self.jump.play()
 						if(jy_pos1_vertical > 0 and int(self.data[self.indexPacMan]["down"]) != -1):
 							prev_pos = self.posPacMan
 							self.direction_of_pacman = "down"
 
-							self.jump.play()
 						elif(jy_pos1_vertical < 0 and int(self.data[self.indexPacMan]["up"]) != -1):
 							prev_pos = self.posPacMan
 							self.direction_of_pacman = "up"
-							self.jump.play()
 
 							#self.indexPacMan = str(self.posPacMan)
-
-
-			'''
-			To stop the music :D :D 
-			if pygame.mixer.music.get_busy():
-		            pygame.mixer.music.stop()
-		        else:
-		            pygame.mixer.music.play()
-			'''
 
 
 		pygame.quit()
@@ -307,6 +354,9 @@ class CGame:
 
 					#Set Pac-man's new position
 					self.dbuffer.Set_Pixel(self.posPacMan, self.colorPacMan, 1)
+
+					#Play the sound
+					self.chomp.play()
 				
 				if (self.twoJSPresent == True):
 					prev_pos = self.posGhost1
@@ -320,6 +370,9 @@ class CGame:
 
 						#Set Ghost's new position
 						self.dbuffer.Set_Pixel(self.posGhost1, self.colorGhost, 1)
+
+						#Play the sound
+						self.chomp.play()
 				#self.aiGhost()		
 				self.lock.release()
 				
@@ -350,12 +403,15 @@ class CGame:
 					#Set ghost's new position
 					self.posAIGhost = int(nextPosGhost)
 					self.dbuffer.Set_Pixel(self.posAIGhost, self.colorAIGhost, 1)
+
+					#Play the sound
+					self.chomp.play()
 				
 				#release a lock here
 				self.lock.release()
 				
 			#This delay should be similar to ledRunning function so as to keep the speed constant
-			time.sleep(0.5)
+			time.sleep(0.75)
 
 if __name__ == '__main__':
 	app = CGame(environment)

@@ -80,7 +80,7 @@ class Display_Buffer:
 				keys = self.Pixels.keys()
                 		for key in keys:
 					if(self.Pixels[key].state == 1):
-    						pygame.draw.circle(self.screen, self.Pixels[key].color, [(self.Pixels[key].x + 1) * 15, (self.Pixels[key].y + 1) * 15], 3, 0)
+    						pygame.draw.circle(self.screen, self.Pixels[key].color, [(self.Pixels[key].x + 1) * 20, (self.Pixels[key].y + 1) * 20], 5, 0)
 					
 		
     				# Go ahead and update the screen with what we've drawn.
