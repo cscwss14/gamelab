@@ -41,6 +41,8 @@ class Display_Buffer:
 			#Initialize LED
 			self.led = LEDStrip(320)
 			self.led.setMasterBrightness(0.5)
+			self.led.fillOff()
+			self.led.update()
 		else:
 			#Initialize the Screen
 			pygame.init()
