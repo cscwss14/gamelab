@@ -27,8 +27,8 @@ if(len(sys.argv) > 1):
 class CGame:
 	def __init__(self, environment):
 
-		self.Joystick1 = None
-		self.Joystick2 = None
+		self.pacManJoystick = None
+		self.ghostJoystick = None
 		self.joystickCount = 1
 		self.jump = None
 		self.fail = None
@@ -62,7 +62,7 @@ class CGame:
 
 	
 		self.environment = environment
-		self.secondPlayerActive= True
+		self.secondPlayerActive= False
 		
 		#Intensities
 		
@@ -109,11 +109,9 @@ class CGame:
 		#Capturing Joystick Events
 		print("Press buttons on the Joystick and see if they are captured by this program")
 
-		#Get the first joystick
-		self.Joystick1 = pygame.joystick.Joystick(0)
-	
+
 		if self.joystickCount > 1:
-			self.Joystick2 = pygame.joystick.Joystick(1)
+			#self.Joystick2 = pygame.joystick.Joystick(1)
 			self.twoJSPresent = True
 
 	
@@ -123,33 +121,33 @@ class CGame:
 		keys = self.data.keys()
 		for key in keys:
 			if(self.data[key]["type"] == "P"):
-				self.dbuffer.Set_Pixel(int(key), self.colorPacMan , 1, self.intensityPacMan)
+				self.dbuffer.setPixel(int(key), self.colorPacMan , 1, self.intensityPacMan)
 				self.posPacMan = int(key)
 				self.indexPacMan = str(self.posPacMan)
 			elif(self.data[key]["type"] == "G"):
 				#if second joystick is active treat this as a coin, dont confuse with, if 2nd joystick present
 				#it should be active, raj will set the variable,self.secondPlayerActive
 				if  self.secondPlayerActive == True:
-				    self.dbuffer.Set_Pixel(int(key), self.colorGhost , 1, self.intensityGhost)
+				    self.dbuffer.setPixel(int(key), self.colorGhost , 1, self.intensityGhost)
 				    self.posGhost = int(key)
 				    self.indexGhost = str(self.posGhost)
 				else:
-				    self.dbuffer.Set_Pixel(int(key), self.colorCoins , 1, self.intensityCoins)
+				    self.dbuffer.setPixel(int(key), self.colorCoins , 1, self.intensityCoins)
 					
 			elif(self.data[key]["type"] == "AI1"):
-				self.dbuffer.Set_Pixel(int(key), self.colorAIGhost1 , 1, self.intensityAIGhost)
+				self.dbuffer.setPixel(int(key), self.colorAIGhost1 , 1, self.intensityAIGhost)
 				self.posAIGhost1 = int(key)
 				self.indexAIGhost = str(self.posAIGhost1)
 			elif(self.data[key]["type"] == "AI2"):
 				#if second joystick is inactive use this
 				if  self.secondPlayerActive == False:
-				    self.dbuffer.Set_Pixel(int(key), self.colorAIGhost2 , 1, self.intensityAIGhost)
+				    self.dbuffer.setPixel(int(key), self.colorAIGhost2 , 1, self.intensityAIGhost)
 				    self.posAIGhost2 = int(key)
 				    self.indexAIGhost = str(self.posAIGhost2)
 				else:
-				    self.dbuffer.Set_Pixel(int(key), self.colorCoins , 1, self.intensityCoins)
+				    self.dbuffer.setPixel(int(key), self.colorCoins , 1, self.intensityCoins)
 			elif(self.data[key]["type"] == "C"):
-				self.dbuffer.Set_Pixel(int(key), self.colorCoins , 1, self.intensityCoins)		
+				self.dbuffer.setPixel(int(key), self.colorCoins , 1, self.intensityCoins)		
 
 	#this function resets the variables
 	def reset_game(self):
@@ -190,30 +188,66 @@ class CGame:
 					#If the start button is pressed and game is stopped, start the game
 					if self.gameState == GameState.STOPPED:
 						if event.button == 1:
-							#Load the array of LEDs to be used for first boot for displaying coins
-							#It will read all LEDs from JSON file. Depending upon their type, they will have different colors
-							app.load_layout()
-							
+							print "First Player started the game"
 							#Start the PacMan Sound
 							pygame.mixer.music.load(os.path.join('data', 'pacman_beginning.wav'))
 							pygame.mixer.music.play(-1)
 
+							
+							#Set the joystick instance of PacMan
+							self.pacManJoystick = pygame.joystick.Joystick(event.joy)
+
+							#if second joystick is present, then wait for the second player (ghost) to start the game
+							if self.twoJSPresent == True:
+								attempt = 1
+								max_no_of_attempts = 3 
+								found = False
+
+								while attempt <= max_no_of_attempts and found == False:
+									print "Inside While", attempt
+					
+									for inner_event in pygame.event.get():
+
+										print "Inner Event Attempt", attempt
+										if inner_event.type == pygame.JOYBUTTONDOWN and inner_event.button == 1 and inner_event.joy != event.joy:
+											print "Second Player also started"
+											#Set the joystick instance of Ghost
+											self.ghostJoystick = pygame.joystick.Joystick(inner_event.joy)
+					
+											#Set the second player active to True
+											self.secondPlayerActive = True
+										
+											found = True
+
+											break
+
+									attempt = attempt + 1
+
+									time.sleep(1)
+							
+							#Load the array of LEDs to be used for first boot for displaying coins
+                                                        #It will read all LEDs from JSON file. Depending upon their type, they will have different colors
+                                                        app.load_layout()
+
+															
 							#Wait for 2 seconds
 							time.sleep(2)
 
 							#Flash the Pac Man and Ghost 3 times
 							for i in range(0,3):
-								self.dbuffer.Set_Pixel(self.indexPacMan, (255, 255, 255), 1, self.intensityPacMan)
-								self.dbuffer.Set_Pixel(self.indexGhost, (255, 255, 255), 1, self.intensityGhost)
-								self.dbuffer.Set_Pixel(self.posAIGhost1, (255, 255, 255), 1, self.intensityAIGhost)
+								self.dbuffer.setPixel(self.indexPacMan, (255, 255, 255), 1, self.intensityPacMan)
+								self.dbuffer.setPixel(self.posAIGhost1, (255, 255, 255), 1, self.intensityAIGhost)
 								if self.secondPlayerActive == False: 
-									self.dbuffer.Set_Pixel(self.posAIGhost2, (255, 255, 255), 1, self.intensityAIGhost)
+									self.dbuffer.setPixel(self.posAIGhost2, (255, 255, 255), 1, self.intensityAIGhost)
+								else:
+									self.dbuffer.setPixel(self.indexGhost, (255, 255, 255), 1, self.intensityGhost)
 								time.sleep(1)
-								self.dbuffer.Set_Pixel(self.indexPacMan, self.colorPacMan, 1, self.intensityPacMan)
-								self.dbuffer.Set_Pixel(self.indexGhost, self.colorGhost, 1, self.intensityGhost)
-								self.dbuffer.Set_Pixel(self.posAIGhost1, self.colorAIGhost1, 1, self.intensityAIGhost)
+								self.dbuffer.setPixel(self.indexPacMan, self.colorPacMan, 1, self.intensityPacMan)
+								self.dbuffer.setPixel(self.posAIGhost1, self.colorAIGhost1, 1, self.intensityAIGhost)
 								if self.secondPlayerActive == False:
-									self.dbuffer.Set_Pixel(self.posAIGhost2, self.colorAIGhost2, 1, self.intensityAIGhost)
+									self.dbuffer.setPixel(self.posAIGhost2, self.colorAIGhost2, 1, self.intensityAIGhost)
+								else:
+									self.dbuffer.setPixel(self.indexGhost, self.colorGhost, 1, self.intensityGhost)
 								time.sleep(1)
 						
 							#Change the game state to RUNNING
@@ -240,7 +274,7 @@ class CGame:
 							self.reset_game()
 							keys = self.data.keys()
                 					for key in keys: 
-								self.dbuffer.Set_Pixel(int(key), (255, 0, 0) , 0)
+								self.dbuffer.setPixel(int(key), (255, 0, 0) , 0)
 			
 							#Change the game state to STOPPED
 							self.gameState = GameState.STOPPED
@@ -257,7 +291,7 @@ class CGame:
 							self.reset_game()
 							keys = self.data.keys()
                 					for key in keys: 
-								self.dbuffer.Set_Pixel(int(key), (255, 0, 0) , 0)
+								self.dbuffer.setPixel(int(key), (255, 0, 0) , 0)
 
 							#Sleep for 2 seconds
 							time.sleep(2)
@@ -269,22 +303,25 @@ class CGame:
 							#Start the PacMan Sound
 							pygame.mixer.music.load(os.path.join('data', 'pacman_beginning.wav'))
 							pygame.mixer.music.play(-1)
+
+							#Flash the Pac Man and Ghost 3 times
+                                                        for i in range(0,3):
+                                                                self.dbuffer.setPixel(self.indexPacMan, (255, 255, 255), 1, self.intensityPacMan)
+                                                                self.dbuffer.setPixel(self.posAIGhost1, (255, 255, 255), 1, self.intensityAIGhost)
+                                                                if self.secondPlayerActive == False:
+                                                                        self.dbuffer.setPixel(self.posAIGhost2, (255, 255, 255), 1, self.intensityAIGhost)
+                                                                else:
+                                                                        self.dbuffer.setPixel(self.indexGhost, (255, 255, 255), 1, self.intensityGhost)
+                                                                time.sleep(1)
+                                                                self.dbuffer.setPixel(self.indexPacMan, self.colorPacMan, 1, self.intensityPacMan)
+                                                                self.dbuffer.setPixel(self.posAIGhost1, self.colorAIGhost1, 1, self.intensityAIGhost)
+                                                                if self.secondPlayerActive == False:
+                                                                        self.dbuffer.setPixel(self.posAIGhost2, self.colorAIGhost2, 1, self.intensityAIGhost)
+                                                                else:
+                                                                        self.dbuffer.setPixel(self.indexGhost, self.colorGhost, 1, self.intensityGhost)
+                                                                time.sleep(1)
+
 		
-							#Start flashing the Pac-Man and Ghost 3 times
-                            				for i in range(0,3):
-                            					self.dbuffer.Set_Pixel(self.indexPacMan, (255, 255, 255), 1, self.intensityPacMan)
-								self.dbuffer.Set_Pixel(self.indexGhost, (255, 255, 255), 1, self.intensityGhost)
-								self.dbuffer.Set_Pixel(self.posAIGhost1, (255, 255, 255), 1, self.intensityAIGhost) 
-								if self.secondPlayerActive == False:
-									self.dbuffer.Set_Pixel(self.posAIGhost2, (255, 255, 255), 1, self.intensityAIGhost)
-                                				time.sleep(1)
-                                				self.dbuffer.Set_Pixel(self.indexPacMan, self.colorPacMan, 1, self.intensityPacMan)
-								self.dbuffer.Set_Pixel(self.indexGhost, self.colorGhost, 1, self.intensityGhost)
-								self.dbuffer.Set_Pixel(self.posAIGhost1, self.colorAIGhost1, 1, self.intensityAIGhost)
-								if self.secondPlayerActive == False:
-									self.dbuffer.Set_Pixel(self.posAIGhost2, self.colorAIGhost2, 1, self.intensityAIGhost)
-                                				time.sleep(1)
-							
 							#Stop the intro sound
 							pygame.mixer.music.stop()							
 
@@ -308,14 +345,14 @@ class CGame:
 					if event.type == pygame.JOYAXISMOTION:
 						print("Axis Moved...")
 						#Joystick1 position
-						jy_pos1_horizontal = self.Joystick1.get_axis(0)
-						jy_pos1_vertical = self.Joystick1.get_axis(1)
+						jy_pos1_horizontal = self.pacManJoystick.get_axis(0)
+						jy_pos1_vertical = self.pacManJoystick.get_axis(1)
 					
 						#Raj will check this
 						if (self.twoJSPresent == True and self.secondPlayerActive == True):
 							#Joystick2 position
-							jy_pos2_horizontal = self.Joystick2.get_axis(0)
-							jy_pos2_vertical = self.Joystick2.get_axis(1)
+							jy_pos2_horizontal = self.ghostJoystick.get_axis(0)
+							jy_pos2_vertical = self.ghostJoystick.get_axis(1)
 					
 							self.handleJoystickTwo(jy_pos2_horizontal,jy_pos2_vertical)		 
 
@@ -390,10 +427,10 @@ class CGame:
 					
 					
 					#Set Off Pac-man's old position
-					self.dbuffer.Set_Pixel(prev_pos, (255, 255, 255), 1, self.intensityPacMan)
+					self.dbuffer.setPixel(prev_pos, (255, 255, 255), 1, self.intensityPacMan)
 
 					#Set Pac-man's new position
-					self.dbuffer.Set_Pixel(self.posPacMan, self.colorPacMan, 1, self.intensityPacMan)
+					self.dbuffer.setPixel(self.posPacMan, self.colorPacMan, 1, self.intensityPacMan)
 
 					#Play the sound
 					self.chomp.play()
@@ -406,10 +443,10 @@ class CGame:
 					
 					
 						#Set Off Ghost's old position
-						self.dbuffer.Set_Pixel(prev_pos, (255, 255, 255), 1, self.intensityGhost)
+						self.dbuffer.setPixel(prev_pos, (255, 255, 255), 1, self.intensityGhost)
 
 						#Set Ghost's new position
-						self.dbuffer.Set_Pixel(self.posGhost, self.colorGhost, 1, self.intensityGhost)
+						self.dbuffer.setPixel(self.posGhost, self.colorGhost, 1, self.intensityGhost)
 
 						#Play the sound
 						self.chomp.play()
@@ -441,22 +478,22 @@ class CGame:
 					nextPosGhost1 = path1[1]
 				
 					#Set Off ghost's old position
-					self.dbuffer.Set_Pixel(self.posAIGhost1, (255, 255, 255), 1, self.intensityAIGhost)
+					self.dbuffer.setPixel(self.posAIGhost1, (255, 255, 255), 1, self.intensityAIGhost)
 				
 					#Set ghost's new position
 					self.posAIGhost1 = int(nextPosGhost1)
-					self.dbuffer.Set_Pixel(self.posAIGhost1, self.colorAIGhost1, 1, self.intensityAIGhost)
+					self.dbuffer.setPixel(self.posAIGhost1, self.colorAIGhost1, 1, self.intensityAIGhost)
 					 #Raj will check this
                                         #if secondplayer is not active then use this
                                         if self.secondPlayerActive == False:
                                             path2 = self.aiPath.findPathAstar2(source_aighost2,destination)
                                             nextPosGhost2 = path2[1]
                                             #Set Off ghost's old position
-                                            self.dbuffer.Set_Pixel(self.posAIGhost2, (255, 255, 255), 1, self.intensityAIGhost)
+                                            self.dbuffer.setPixel(self.posAIGhost2, (255, 255, 255), 1, self.intensityAIGhost)
 
                                             #Set ghost's new position
                                             self.posAIGhost2 = int(nextPosGhost2)
-                                            self.dbuffer.Set_Pixel(self.posAIGhost2, self.colorAIGhost2, 1, self.intensityAIGhost)
+                                            self.dbuffer.setPixel(self.posAIGhost2, self.colorAIGhost2, 1, self.intensityAIGhost)
 					 
 					#Play the sound
 					self.chomp.play()
@@ -493,11 +530,11 @@ class CGame:
 					    nextPosGhost2 = path2[1]
 					    
 						#Set Off ghost's old position
-					    self.dbuffer.Set_Pixel(self.posAIGhost2, (255, 255, 255), 1, self.intensityAIGhost)
+					    self.dbuffer.setPixel(self.posAIGhost2, (255, 255, 255), 1, self.intensityAIGhost)
 				
 					    #Set ghost's new position
 					    self.posAIGhost2 = int(nextPosGhost2)
-					    self.dbuffer.Set_Pixel(self.posAIGhost2, self.colorAIGhost2, 1, self.intensityAIGhost)
+					    self.dbuffer.setPixel(self.posAIGhost2, self.colorAIGhost2, 1, self.intensityAIGhost)
 
 				#release a lock here
 				self.lock.release()
@@ -519,10 +556,6 @@ if __name__ == '__main__':
 	refreshWin.start()
 	
 	if(app.environment == Environment.ENV_DESKTOP):
-		app.dbuffer.Start_Flushing()
+		app.dbuffer.startFlushing()
 	else:
 		threadMain.join()
-		threadAIGhost1.join()
-		#threadAIGhost2.join()
-		refreshWin.join()
-		
