@@ -452,7 +452,7 @@ class CGame:
 
 
 	#This function will be called in another thread which will increment the PACMAN with each clocktick
-	def ledRunningFunc(self):
+	def pacmanRunningFunc(self):
 		
 		while 1:
 			#print "LED Running Function"		
@@ -508,25 +508,6 @@ class CGame:
 					#Set Pac-man's new position
 					self.dbuffer.setPixel(self.posPacMan, self.colorPacMan, 1, self.intensityPacMan)
 
-				#Raj will check this also
-				if (self.twoJSPresent == True and self.secondPlayerActive == True):
-					prev_posGhost = self.posGhost
-					if (int(self.data[self.indexGhost][self.direction_of_ghost]) != -1):
-						self.posGhost = int(self.data[self.indexGhost][self.direction_of_ghost])
-						self.indexGhost = str(self.posGhost)
-						
-						#Set Off Ghost's old position
-						#If that position is not visited by pacman, then set the color to coins
-						#Otherwise, set the color to collected coins
-						index = str(prev_posGhost)
-						if(self.scoreDict[index] == False):
-							self.dbuffer.setPixel(prev_posGhost, self.colorCoins, 1, self.intensityCoins)
-						else:
-							 self.dbuffer.setPixel(prev_posGhost, self.colorCollectedCoins, 1, self.intensityCollectedCoins)
-
-
-						#Set Ghost's new position
-						self.dbuffer.setPixel(self.posGhost, self.colorGhost, 1, self.intensityGhost)
 
 				if(self.pacmanWon() == True):
                                         print "------------Pacman Won------------"
@@ -558,6 +539,37 @@ class CGame:
 			self.lock.release()
 				
 			time.sleep(0.5 / self.pacmanSpeed)
+	
+	#This function will be called in another thread which will increment the GHOST with each clocktick
+        def ghostRunningFunc(self):
+		while 1:
+                        #print "Ghost Running Function"
+                        self.lock.acquire()
+                        #Do only when game is RUNNING
+                        if self.gameState == GameState.RUNNING:
+				if (self.twoJSPresent == True and self.secondPlayerActive == True):
+                                        prev_posGhost = self.posGhost
+                                        if (int(self.data[self.indexGhost][self.direction_of_ghost]) != -1):
+                                                self.posGhost = int(self.data[self.indexGhost][self.direction_of_ghost])
+                                                self.indexGhost = str(self.posGhost)
+
+                                                #Set Off Ghost's old position
+                                                #If that position is not visited by pacman, then set the color to coins
+                                                #Otherwise, set the color to collected coins
+                                                index = str(prev_posGhost)
+                                                if(self.scoreDict[index] == False):
+                                                        self.dbuffer.setPixel(prev_posGhost, self.colorCoins, 1, self.intensityCoins)
+                                                else:
+                                                         self.dbuffer.setPixel(prev_posGhost, self.colorCollectedCoins, 1, self.intensityCollectedCoins)
+
+
+                                                #Set Ghost's new position
+                                                self.dbuffer.setPixel(self.posGhost, self.colorGhost, 1, self.intensityGhost)
+			self.lock.release()
+			
+			time.sleep(0.5)
+
+
 
 	
 	def pacmanWon(self):
@@ -678,14 +690,16 @@ if __name__ == '__main__':
 	app = CGame(environment)
 	
 	#Create threads
-	refreshWin = threading.Thread(target = app.ledRunningFunc, args = [])
+	refreshPacman = threading.Thread(target = app.pacmanRunningFunc, args = [])
+	refreshGhost = threading.Thread(target = app.ghostRunningFunc, args = [])
 	threadMain = threading.Thread(target = app.main, args = [])
 	threadAIGhost1 = threading.Thread(target=app.aiGhost1 , args=[])
 
 	#Start threads
 	threadMain.start()
 	threadAIGhost1.start()
-	refreshWin.start()
+	refreshPacman.start()
+	refreshGhost.start()
 	
 	if(app.environment == Environment.ENV_DESKTOP):
 		app.dbuffer.startFlushing()
