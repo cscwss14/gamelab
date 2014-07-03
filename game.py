@@ -56,6 +56,9 @@ class CGame:
 		#Pacman Speed
 		self.pacmanSpeed = 1.0	
 		
+		#Sleep Time
+		self.sleepTime = 0.3
+
 		#initial colors
 		self.colorAIGhost1 = (0,0,255)
 		self.colorAIGhost2 = (0,0,255)
@@ -63,8 +66,8 @@ class CGame:
 
 		self.colorPacMan = (255, 255, 0)
 		self.colorGhost = (255, 0, 0)
-		self.colorCoins = (255,255,255)
-		self.colorCollectedCoins = (12,223,223)
+		self.colorCoins = (12,223,223)
+		self.colorCollectedCoins = (255,255,255)
 		self.colorSpecialBean = (0, 255, 0)
 		
 		#Initial State of the game
@@ -78,8 +81,8 @@ class CGame:
 		self.intensityPacMan = 1.0
 		self.intensityGhost = 1.0
 		self.intensityAIGhost = 1.0
-		self.intensityCoins = 0.2
-		self.intensityCollectedCoins = 0.3
+		self.intensityCoins = 0.5
+		self.intensityCollectedCoins = 0.2
 		self.intensitySpecialBean = 1.0
 
 		self.twoJSPresent = False
@@ -102,14 +105,14 @@ class CGame:
 		pygame.init()                              #initialize pygame
 
 		#We need to setup the display. Otherwise, pygame events will not work
-		screen_size = [800, 800]
-		pygame.display.set_mode(screen_size)
+		#screen_size = [800, 800]
+		#pygame.display.set_mode(screen_size)
                
 
 		# look for sound & music files in subfolder 'data'
-		self.chomp = pygame.mixer.Sound(os.path.join('data','pacman_chomp.wav'))  #load sound
-		self.eat_fruit = pygame.mixer.Sound(os.path.join('data','pacman_eatfruit.wav'))  #load sound
-		self.pacman_death = pygame.mixer.Sound(os.path.join('data','pacman_death.wav'))  #load sound 	               
+		#self.chomp = pygame.mixer.Sound(os.path.join('data','pacman_chomp.wav'))  #load sound
+		#self.eat_fruit = pygame.mixer.Sound(os.path.join('data','pacman_eatfruit.wav'))  #load sound
+		#self.pacman_death = pygame.mixer.Sound(os.path.join('data','pacman_death.wav'))  #load sound 	               
                
 		#Initialize the Joysticks
 		pygame.joystick.init()
@@ -193,6 +196,7 @@ class CGame:
 
 	#this function resets the variables
 	def reset_game(self):
+		self.dbuffer.fillOff()
 		#Reset all the variables
 		self.posPacMan = 1
 		self.posGhost = 1
@@ -208,7 +212,7 @@ class CGame:
 		self.numOfCoins = None
 		self.scoreDict = None
 		self.secondPlayerActive = False  
- 
+		 
 	#main game loop
 	def main(self):		
 		prev_posPacman = self.posPacMan
@@ -237,8 +241,8 @@ class CGame:
 						if event.button == 1:
 							print "First Player started the game"
 							#Start the PacMan Sound
-							pygame.mixer.music.load(os.path.join('data', 'pacman_beginning.wav'))
-							pygame.mixer.music.play(-1)
+							#pygame.mixer.music.load(os.path.join('data', 'pacman_beginning.wav'))
+							#pygame.mixer.music.play(-1)
 
 							
 							#Set the joystick instance of PacMan
@@ -303,7 +307,7 @@ class CGame:
 							self.gameState = GameState.RUNNING
 							
 							#Stop the intro sound
-							pygame.mixer.music.stop()
+							#pygame.mixer.music.stop()
 
 							print "Game is running now.."
 					
@@ -311,8 +315,8 @@ class CGame:
 						#If the pause button is pressed and game is running, pause the game
 						if event.button == 2:
 							#play the intermission sound
-							pygame.mixer.music.load(os.path.join('data', 'pacman_intermission.wav'))
-                                                        pygame.mixer.music.play(-1)
+							#pygame.mixer.music.load(os.path.join('data', 'pacman_intermission.wav'))
+                                                        #pygame.mixer.music.play(-1)
 
 			
 							#Change the game state to PAUSED
@@ -336,7 +340,7 @@ class CGame:
 							self.gameState = GameState.RESETTED
 
 							#Stop the game sound
-							pygame.mixer.music.stop()
+							#pygame.mixer.music.stop()
 
 							#Reset the layout	
 							self.reset_game()
@@ -352,8 +356,8 @@ class CGame:
 
 			
 							#Start the PacMan Sound
-							pygame.mixer.music.load(os.path.join('data', 'pacman_beginning.wav'))
-							pygame.mixer.music.play(-1)
+							#pygame.mixer.music.load(os.path.join('data', 'pacman_beginning.wav'))
+							#pygame.mixer.music.play(-1)
 
 							#Flash the Pac Man and Ghost 3 times
                                                         for i in range(0,3):
@@ -376,7 +380,7 @@ class CGame:
 
 		
 							#Stop the intro sound
-							pygame.mixer.music.stop()							
+							#pygame.mixer.music.stop()							
 
 							#Change the game state to RUNNING
 							self.gameState = GameState.RUNNING
@@ -385,7 +389,7 @@ class CGame:
 					elif self.gameState == GameState.PAUSED:
 						if event.button == 1:
 							#Stop the intermission game sound
-							pygame.mixer.music.stop()
+							#pygame.mixer.music.stop()
 
 							#Change the game state to RUNNING
 							self.gameState = GameState.RUNNING
@@ -475,7 +479,7 @@ class CGame:
 						#If the coin is one of the special bean
 						if prev_pos in self.posSpecialBeans:
 							#Play the sound
-							self.eat_fruit.play()
+							#self.eat_fruit.play()
 							
 							#If already in fast mode, then stop the timer and start over timer
 							if (self.pacmanSpeed > 1.0 ):
@@ -495,7 +499,7 @@ class CGame:
 							
 
 						#Play the sound
-						self.chomp.play()
+						#self.chomp.play()
 					else:
 						#If already visited, then set the color to the color of the coin
 						self.dbuffer.setPixel(prev_pos, self.colorCollectedCoins, 1, self.intensityCollectedCoins)
@@ -539,7 +543,7 @@ class CGame:
 
 			self.lock.release()
 				
-			time.sleep(0.5 / self.pacmanSpeed)
+			time.sleep(self.sleepTime / self.pacmanSpeed)
 	
 	#This function will be called in another thread which will increment the GHOST with each clocktick
         def ghostRunningFunc(self):
@@ -568,7 +572,7 @@ class CGame:
                                                 self.dbuffer.setPixel(self.posGhost, self.colorGhost, 1, self.intensityGhost)
 			self.lock.release()
 			
-			time.sleep(0.5)
+			time.sleep(self.sleepTime)
 
 
 
@@ -663,7 +667,7 @@ class CGame:
 
 			        if(self.pacmanLost() == True):
 						#Play the sound
-						self.pacman_death.play()
+						#self.pacman_death.play()
 						
                                         	#Make all leds red from down to top
                                 		keys = self.data.keys()

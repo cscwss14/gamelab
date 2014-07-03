@@ -55,7 +55,10 @@ class Display_Buffer:
 			size = [800, 800]
 			self.screen = pygame.display.set_mode(size)
 			pygame.display.set_caption("PacMan - Desktop")
-					
+
+
+	def fillOff(self):
+		self.led.fillOff()
 
 	#This Method is called only when the environment is Desktop
 	#Incase of LEDs, periodic Flushing will result in blinking
@@ -102,7 +105,7 @@ class Display_Buffer:
 	#This is for internal usage
 	def pushToLed(self, pixel):
 		if(pixel.state == 1):
-			self.led.fillPixelWithIntensity(pixel.color[0], pixel.color[1], pixel.color[2], pixel.LED, pixel.intensity)
+			self.led.fillPixelWithIntensity(pixel.color[0], pixel.color[1], pixel.color[2], pixel.LED - 1, pixel.intensity)
 		else:
 			self.led.setOff(pixel.LED)
 
