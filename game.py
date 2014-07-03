@@ -207,7 +207,8 @@ class CGame:
                 self.direction_of_ghost = "down"
 		self.numOfCoins = None
 		self.scoreDict = None
-   
+		self.secondPlayerActive = False  
+ 
 	#main game loop
 	def main(self):		
 		prev_posPacman = self.posPacMan
@@ -248,7 +249,7 @@ class CGame:
 								attempt = 1
 								max_no_of_attempts = 5 
 								found = False
-
+								self.secondPlayerActive = False
 								while attempt <= max_no_of_attempts and found == False:
 									print "---------------Inside While-----------", attempt
 					
