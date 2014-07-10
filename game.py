@@ -66,8 +66,8 @@ class CGame:
 
 		self.colorPacMan = (255, 255, 0)
 		self.colorGhost = (255, 0, 0)
-		self.colorCoins = (12,223,223)
-		self.colorCollectedCoins = (255,255,255)
+		self.colorCoins = (255,255,255)
+		self.colorCollectedCoins = (12,223,223)
 		self.colorSpecialBean = (0, 255, 0)
 		
 		#Initial State of the game
