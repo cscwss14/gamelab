@@ -57,12 +57,12 @@ class CGame:
 		self.pacmanSpeed = 1.0	
 		
 		#Sleep Time
-		self.sleepTime = 0.3
+		self.sleepTime = 0.2
 
 		#initial colors
-		self.colorAIGhost1 = (0,0,255)
-		self.colorAIGhost2 = (0,0,255)
-		self.colorAIGhost3 = (0,0,255)
+		self.colorAIGhost1 = (174,13,155) 
+		self.colorAIGhost2 = (221,118,2) 
+		self.colorAIGhost3 = (174,13,155)
 
 		self.colorPacMan = (255, 255, 0)
 		self.colorGhost = (255, 0, 0)
@@ -82,7 +82,7 @@ class CGame:
 		self.intensityGhost = 1.0
 		self.intensityAIGhost = 1.0
 		self.intensityCoins = 0.5
-		self.intensityCollectedCoins = 0.2
+		self.intensityCollectedCoins = 0.15
 		self.intensitySpecialBean = 1.0
 
 		self.twoJSPresent = False
@@ -99,6 +99,7 @@ class CGame:
 	
 		#call this function again to reset this dictionary
 		self.scoreDict = self.aiPath.getNewScoreDict()
+		#print "score dict", self.scoreDict
 		self.numOfCoins = len(self.scoreDict)
 
 		#pygame.mixer.pre_init(44100, -16, 2, 2048) # setup mixer to avoid sound lag
@@ -255,11 +256,11 @@ class CGame:
 								found = False
 								self.secondPlayerActive = False
 								while attempt <= max_no_of_attempts and found == False:
-									print "---------------Inside While-----------", attempt
+									#print "---------------Inside While-----------", attempt
 					
 									for inner_event in pygame.event.get():
 
-										print "-----Inner Event Attempt-----", attempt
+										#print "-----Inner Event Attempt-----", attempt
 										if inner_event.type == pygame.JOYBUTTONDOWN and inner_event.button == 1 and inner_event.joy != event.joy:
 											print "Second Player also started"
 											#Set the joystick instance of Ghost
@@ -293,7 +294,7 @@ class CGame:
 								else:
 									self.dbuffer.setPixel(self.indexGhost, (255, 255, 255), 1, self.intensityGhost)
 								self.dbuffer.setPixel(self.posAIGhost3, (255, 255, 255), 1, self.intensityAIGhost)
-								time.sleep(1)
+								time.sleep(0.5)
 								self.dbuffer.setPixel(self.indexPacMan, self.colorPacMan, 1, self.intensityPacMan)
 								self.dbuffer.setPixel(self.posAIGhost1, self.colorAIGhost1, 1, self.intensityAIGhost)
 								if self.secondPlayerActive == False:
@@ -309,7 +310,7 @@ class CGame:
 							#Stop the intro sound
 							#pygame.mixer.music.stop()
 
-							print "Game is running now.."
+							#print "Game is running now.."
 					
 					elif self.gameState == GameState.RUNNING:
 						#If the pause button is pressed and game is running, pause the game
@@ -469,6 +470,8 @@ class CGame:
 				if (int(self.data[self.indexPacMan][self.direction_of_pacman]) != -1):
 					#Mark this position visited, if not already visited and decrease the number of counts
                                         index = str(prev_pos)	
+					#print "index------------", index
+					#print "dict", self.scoreDict
 					if(self.scoreDict[index] == False):
                                         	self.scoreDict[index] = True
                                                	self.numOfCoins = self.numOfCoins - 1
@@ -531,8 +534,10 @@ class CGame:
 					#Change the game state to STOPPED
 					self.gameState = GameState.STOPPED	
 
+				self.afterLosing()
+
 			#if the numOfCoins decreases to lesser than 100 activate the aggressive chase 	
-			if(self.numOfCoins > 50):	
+			if(self.numOfCoins > 35):	
 				if(self.scatterTime < 5 ):
 					self.scatterTime +=1
 				else:	
@@ -563,15 +568,20 @@ class CGame:
                                                 #Otherwise, set the color to collected coins
                                                 index = str(prev_posGhost)
                                                 if(self.scoreDict[index] == False):
-                                                        self.dbuffer.setPixel(prev_posGhost, self.colorCoins, 1, self.intensityCoins)
+							if prev_posGhost in self.posSpecialBeans:
+								 self.dbuffer.setPixel(prev_posGhost, self.colorSpecialBean, 1, self.intensitySpecialBean)
+							else:
+                                                        	self.dbuffer.setPixel(prev_posGhost, self.colorCoins, 1, self.intensityCoins)
                                                 else:
                                                          self.dbuffer.setPixel(prev_posGhost, self.colorCollectedCoins, 1, self.intensityCollectedCoins)
 
 
                                                 #Set Ghost's new position
                                                 self.dbuffer.setPixel(self.posGhost, self.colorGhost, 1, self.intensityGhost)
+					self.afterLosing()
 			self.lock.release()
 			
+			#TBD - TEmp Fix
 			time.sleep(self.sleepTime)
 
 
@@ -580,7 +590,7 @@ class CGame:
 	def pacmanWon(self):
         #This function simply checks the current number of coins to collect as of now and decides the winner"""
 		#print "------number of coins-----",self.numOfCoins
-		if (self.numOfCoins == 0):
+		if (self.numOfCoins == 1):
                 	return True
 
         def pacmanLost(self):
@@ -621,7 +631,10 @@ class CGame:
 					#Set Off ghost's old position
 					#If the path is already visited by the pacman, then set the color to Collected coin color, otherwise set the color to Coin color
                                         if(self.scoreDict[source_aighost1] == False):
-                                                self.dbuffer.setPixel(self.posAIGhost1, self.colorCoins, 1, self.intensityCoins)
+						if self.posAIGhost1 in self.posSpecialBeans:
+							 self.dbuffer.setPixel(self.posAIGhost1, self.colorSpecialBean, 1, self.intensitySpecialBean)
+						else:
+                                                       	self.dbuffer.setPixel(self.posAIGhost1, self.colorCoins, 1, self.intensityCoins)
 					else:
 						self.dbuffer.setPixel(self.posAIGhost1, self.colorCollectedCoins, 1, self.intensityCollectedCoins)
 
@@ -638,7 +651,10 @@ class CGame:
 					    #Set Off ghost's old position
                                             #If the path is already visited by the pacman, then set the color to Collected coin color, otherwise set the color to Coin color
                                             if(self.scoreDict[source_aighost2] == False):
-                                                self.dbuffer.setPixel(self.posAIGhost2, self.colorCoins, 1, self.intensityCoins)
+						if self.posAIGhost2 in self.posSpecialBeans:
+							 self.dbuffer.setPixel(self.posAIGhost2, self.colorSpecialBean, 1, self.intensitySpecialBean)
+						else:
+                                                       	self.dbuffer.setPixel(self.posAIGhost2, self.colorCoins, 1, self.intensityCoins)
                                             else:
                                                 self.dbuffer.setPixel(self.posAIGhost2, self.colorCollectedCoins, 1, self.intensityCollectedCoins)
                                           
@@ -653,10 +669,13 @@ class CGame:
 					#Set Off ghost's old position
                                         #If the path is already visited by the pacman, then set the color to Collected coin color, otherwise set the color to Coin color
                                         if(self.scoreDict[source_aighost3] == False):
-                                                self.dbuffer.setPixel(self.posAIGhost3, self.colorCoins, 1, self.intensityCoins)
-                                        else:
-                                                self.dbuffer.setPixel(self.posAIGhost3, self.colorCollectedCoins, 1, self.intensityCollectedCoins)
-	
+						if self.posAIGhost3 in self.posSpecialBeans:
+                                                	self.dbuffer.setPixel(self.posAIGhost3, self.colorSpecialBean, 1, self.intensitySpecialBean)
+                                        	else:
+                                               		self.dbuffer.setPixel(self.posAIGhost3, self.colorCoins, 1, self.intensityCoins)
+					else:
+						self.dbuffer.setPixel(self.posAIGhost3, self.colorCollectedCoins, 1, self.intensityCollectedCoins)
+
 					#Set ghost's new position
 					self.posAIGhost3 = int(nextPosGhost3)
 					self.dbuffer.setPixel(self.posAIGhost3, self.colorAIGhost3, 1, self.intensityAIGhost)
@@ -665,30 +684,35 @@ class CGame:
 					#Play the sound
 					#self.chomp.play()
 
-			        if(self.pacmanLost() == True):
-						#Play the sound
-						#self.pacman_death.play()
-						
-                                        	#Make all leds red from down to top
-                                		keys = self.data.keys()
-                                        	for key in keys:
-                                                	self.dbuffer.setPixel(int(key), (255, 0, 0), 1, 0.5)                         
+				self.afterLosing()
 
-                                        	time.sleep(1)
-
-                                        	#Turn off all leds
-                                        	self.reset_game()
-                                        	for key in keys:
-                                                	self.dbuffer.setPixel(int(key), (255, 0, 0) , 0)
-
-                                        	#Change the game state to STOPPED
-                                        	self.gameState = GameState.STOPPED		
 		
+
 			#release a lock here
 			self.lock.release()
 			#This delay should be similar to ledRunning function so as to keep the speed constant
 			time.sleep(0.5)
+	def afterLosing(self):
+		if(self.pacmanLost() == True):
+		#Play the sound
+		#self.pacman_death.play()
+	
+                     	#Make all leds red from down to top
+                	keys = self.data.keys()
+                        for key in keys:
+                        	self.dbuffer.setPixel(int(key), (255, 0, 0), 1, 0.5)                         
 
+                        time.sleep(1)
+
+                        #Turn off all leds
+                        self.reset_game()
+                        for key in keys:
+                        	self.dbuffer.setPixel(int(key), (255, 0, 0) , 0)
+
+                      	#Change the game state to STOPPED
+                        self.gameState = GameState.STOPPED		
+		
+		
 				
 
 if __name__ == '__main__':
