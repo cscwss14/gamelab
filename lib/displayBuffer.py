@@ -23,6 +23,7 @@ class Display_Buffer:
 		
 		self.environment = environment	
 
+		self.led = None
 		#default color - white
 		color = (255,255,255)
 
@@ -58,7 +59,13 @@ class Display_Buffer:
 
 
 	def fillOff(self):
-		self.led.fillOff()
+		if(self.environment == Environment.ENV_LED):
+			self.led.fillOff()
+		else:
+			keys = self.Pixels_info.keys()
+                	for key in keys:
+                        	self.Pixels[key] = Pixel(int(key), int(self.Pixels_info[key]["x"]), int(self.Pixels_info[key]["y"]), (255, 255, 255), 0, 1.0)
+	
 
 	#This Method is called only when the environment is Desktop
 	#Incase of LEDs, periodic Flushing will result in blinking
@@ -71,7 +78,7 @@ class Display_Buffer:
 			clock = pygame.time.Clock()
  
 			while not done:
-				print "In Flushing function"
+				#print "In Flushing function"
  
     				# This limits the while loop to a max of 10 times per second.
     				# Leave this out and we will use all CPU we can.

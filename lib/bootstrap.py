@@ -13,11 +13,11 @@ import os.path
 import sys
 
 # Check that the system is set up like we want it
-dev = '/dev/spidev0.0'
+dev = '/dev/spidev1.0'
 
 if not os.path.exists(dev):
     sys.stderr.write("""
-The SPI device /dev/spidev0.0 does not exist. You may need to load
+The SPI device /dev/spidev1.0 does not exist. You may need to load
 the appropriate kernel modules. Try:
 
 sudo modprobe spi_bcm2708 ; sudo modprobe spidev
@@ -34,10 +34,10 @@ try:
 except IOError as  e:
     if e.errno == 13:
         sys.stderr.write("""
-It looks like SPI device /dev/spidev0.0 has the wrong permissions.
+It looks like SPI device /dev/spidev1.0 has the wrong permissions.
 Try making it world writable:
 
-sudo chmod a+rw /dev/spidev0.0
+sudo chmod a+rw /dev/spidev1.0
 
 """)
     sys.exit(2)
