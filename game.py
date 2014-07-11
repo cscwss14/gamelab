@@ -57,7 +57,7 @@ class CGame:
 		self.pacmanSpeed = 1.0	
 		
 		#Sleep Time
-		self.sleepTime = 0.2
+		self.sleepTime = 0.5
 
 		#initial colors
 		self.colorAIGhost1 = (174,13,155) 
@@ -403,14 +403,14 @@ class CGame:
 					if event.type == pygame.JOYAXISMOTION:
 						#print("Axis Moved...")
 						#Joystick1 position
-						jy_pos1_horizontal = self.pacManJoystick.get_axis(0)
-						jy_pos1_vertical = self.pacManJoystick.get_axis(1)
+						jy_pos1_horizontal = self.pacManJoystick.get_axis(4)
+						jy_pos1_vertical = self.pacManJoystick.get_axis(5)
 					
 						#Raj will check this
 						if (self.twoJSPresent == True and self.secondPlayerActive == True):
 							#Joystick2 position
-							jy_pos2_horizontal = self.ghostJoystick.get_axis(0)
-							jy_pos2_vertical = self.ghostJoystick.get_axis(1)
+							jy_pos2_horizontal = self.ghostJoystick.get_axis(4)
+							jy_pos2_vertical = self.ghostJoystick.get_axis(5)
 					
 							self.handleJoystickTwo(jy_pos2_horizontal,jy_pos2_vertical)		 
 
