@@ -279,7 +279,7 @@ class CGame:
 							
 							#Load the array of LEDs to be used for first boot for displaying coins
                                                         #It will read all LEDs from JSON file. Depending upon their type, they will have different colors
-                                                        app.load_layout()
+                                                        self.load_layout()
 
 															
 							#Wait for 2 seconds
