@@ -7,6 +7,14 @@ def config():
 
 	return data
 
+
+def settings():
+        with open('settings.json') as data_file:
+                data = json.load(data_file)
+
+        return data
+
+
 def orientation():
 	with open('OrientationData.json') as data_file:
         	orient = json.load(data_file)

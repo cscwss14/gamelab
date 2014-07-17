@@ -37,38 +37,11 @@ class CGame:
 		self.joystick_names = []
 		self.direction_of_pacman = None
 		self.data  = init.config()
-		
-		#initial positions	
-		self.posPacMan = 1
-		self.posGhost = 1
-		self.posAIGhost1 = "72"
-		self.posAIGhost2 = "80"
-		self.posAIGhost3 = "80"
+		self.settings = init.settings()
 		self.posSpecialBeans = []
-		self.indexPacMan = str(self.posPacMan)
-		self.indexGhost = str(self.posGhost)
 		
-		
-		#initial direction
-		self.direction_of_pacman = "up"	
-		self.direction_of_ghost = "down"
-
-		#Pacman Speed
-		self.pacmanSpeed = 1.0	
-		
-		#Sleep Time
-		self.sleepTime = 0.5
-
-		#initial colors
-		self.colorAIGhost1 = (174,13,155) 
-		self.colorAIGhost2 = (221,118,2) 
-		self.colorAIGhost3 = (174,13,155)
-
-		self.colorPacMan = (255, 255, 0)
-		self.colorGhost = (255, 0, 0)
-		self.colorCoins = (255,255,255)
-		self.colorCollectedCoins = (12,223,223)
-		self.colorSpecialBean = (0, 255, 0)
+		#Load the settings 
+		self.loadSettings()
 		
 		#Initial State of the game
 		self.gameState = GameState.STOPPED
@@ -77,14 +50,6 @@ class CGame:
 		self.environment = environment
 		self.secondPlayerActive= False
 		
-		#Intensities
-		self.intensityPacMan = 1.0
-		self.intensityGhost = 1.0
-		self.intensityAIGhost = 1.0
-		self.intensityCoins = 0.5
-		self.intensityCollectedCoins = 0.15
-		self.intensitySpecialBean = 1.0
-
 		self.twoJSPresent = False
 		self.lock = threading.Lock()
 
@@ -102,7 +67,7 @@ class CGame:
 		#print "score dict", self.scoreDict
 		self.numOfCoins = len(self.scoreDict)
 
-		#pygame.mixer.pre_init(44100, -16, 2, 2048) # setup mixer to avoid sound lag
+		pygame.mixer.pre_init(44100, -16, 2, 2048) # setup mixer to avoid sound lag
 		pygame.init()                              #initialize pygame
 
 		#We need to setup the display. Otherwise, pygame events will not work
@@ -111,9 +76,9 @@ class CGame:
                
 
 		# look for sound & music files in subfolder 'data'
-		#self.chomp = pygame.mixer.Sound(os.path.join('data','pacman_chomp.wav'))  #load sound
-		#self.eat_fruit = pygame.mixer.Sound(os.path.join('data','pacman_eatfruit.wav'))  #load sound
-		#self.pacman_death = pygame.mixer.Sound(os.path.join('data','pacman_death.wav'))  #load sound 	               
+		self.chomp = pygame.mixer.Sound(os.path.join('data','pacman_chomp.wav'))  #load sound
+		self.eat_fruit = pygame.mixer.Sound(os.path.join('data','pacman_eatfruit.wav'))  #load sound
+		self.pacman_death = pygame.mixer.Sound(os.path.join('data','pacman_death.wav'))  #load sound 	               
                
 		#Initialize the Joysticks
 		pygame.joystick.init()
@@ -134,6 +99,45 @@ class CGame:
 		if self.joystickCount > 1:
 			#self.Joystick2 = pygame.joystick.Joystick(1)
 			self.twoJSPresent = True
+
+	#this function loads the initial settings from the json file
+    	def loadSettings(self):
+		#initial positions	
+		self.posPacMan = int(self.settings["pacman"]["init_pos"])
+		self.posGhost = int(self.settings["ghost"]["init_pos"])
+		self.posAIGhost1 = self.settings["aighost1"]["init_pos"]
+		self.posAIGhost2 = self.settings["aighost2"]["init_pos"]
+		self.posAIGhost3 = self.settings["aighost3"]["init_pos"]
+		self.indexPacMan = str(self.posPacMan)
+		self.indexGhost = str(self.posGhost)
+		
+		#initial direction
+		self.direction_of_pacman = self.settings["pacman"]["start_dir"]	
+		self.direction_of_ghost = self.settings["ghost"]["start_dir"]
+		
+		#Pacman Speed
+		self.pacmanSpeed = float(self.settings["pacman"]["speed"])	
+		
+		#Sleep Time
+		self.sleepTime = float(self.settings["general"]["sleepTime"])
+		
+		#initial colors
+		self.colorAIGhost1 = (int(self.settings["aighost1"]["colorR"]),int(self.settings["aighost1"]["colorG"]),int(self.settings["aighost1"]["colorB"]))  
+		self.colorAIGhost2 = (int(self.settings["aighost2"]["colorR"]),int(self.settings["aighost2"]["colorG"]),int(self.settings["aighost2"]["colorB"])) 
+		self.colorAIGhost3 = (int(self.settings["aighost3"]["colorR"]),int(self.settings["aighost3"]["colorG"]),int(self.settings["aighost3"]["colorB"]))
+		self.colorPacMan = (int(self.settings["pacman"]["colorR"]),int(self.settings["pacman"]["colorG"]),int(self.settings["pacman"]["colorB"]))
+		self.colorGhost = (int(self.settings["ghost"]["colorR"]),int(self.settings["ghost"]["colorG"]),int(self.settings["ghost"]["colorB"]))
+		self.colorCoins = (int(self.settings["coins"]["colorR"]),int(self.settings["coins"]["colorG"]),int(self.settings["coins"]["colorB"]))
+		self.colorCollectedCoins = (int(self.settings["collectedCoins"]["colorR"]),int(self.settings["collectedCoins"]["colorG"]),int(self.settings["collectedCoins"]["colorB"]))
+		self.colorSpecialBean = (int(self.settings["spbean"]["colorR"]),int(self.settings["spbean"]["colorG"]),int(self.settings["spbean"]["colorB"]))
+		
+		#Intensities
+		self.intensityPacMan = float(self.settings["pacman"]["intensity"])
+		self.intensityGhost = float(self.settings["ghost"]["intensity"])
+		self.intensityAIGhost = float(self.settings["aighost1"]["intensity"])
+		self.intensityCoins = float(self.settings["coins"]["intensity"])
+		self.intensityCollectedCoins = float(self.settings["collectedCoins"]["intensity"])
+		self.intensitySpecialBean = float(self.settings["spbean"]["intensity"])
         
 	#this function is the callback function to reset the speed of the pacman
 	def reset_speed(self):
@@ -242,8 +246,8 @@ class CGame:
 						if event.button == 1:
 							print "First Player started the game"
 							#Start the PacMan Sound
-							#pygame.mixer.music.load(os.path.join('data', 'pacman_beginning.wav'))
-							#pygame.mixer.music.play(-1)
+							pygame.mixer.music.load(os.path.join('data', 'pacman_beginning.wav'))
+							pygame.mixer.music.play(-1)
 
 							
 							#Set the joystick instance of PacMan
@@ -308,7 +312,7 @@ class CGame:
 							self.gameState = GameState.RUNNING
 							
 							#Stop the intro sound
-							#pygame.mixer.music.stop()
+							pygame.mixer.music.stop()
 
 							#print "Game is running now.."
 					
@@ -316,8 +320,8 @@ class CGame:
 						#If the pause button is pressed and game is running, pause the game
 						if event.button == 2:
 							#play the intermission sound
-							#pygame.mixer.music.load(os.path.join('data', 'pacman_intermission.wav'))
-                                                        #pygame.mixer.music.play(-1)
+							pygame.mixer.music.load(os.path.join('data', 'pacman_intermission.wav'))
+                                                        pygame.mixer.music.play(-1)
 
 			
 							#Change the game state to PAUSED
@@ -341,7 +345,7 @@ class CGame:
 							self.gameState = GameState.RESETTED
 
 							#Stop the game sound
-							#pygame.mixer.music.stop()
+							pygame.mixer.music.stop()
 
 							#Reset the layout	
 							self.reset_game()
@@ -357,8 +361,8 @@ class CGame:
 
 			
 							#Start the PacMan Sound
-							#pygame.mixer.music.load(os.path.join('data', 'pacman_beginning.wav'))
-							#pygame.mixer.music.play(-1)
+							pygame.mixer.music.load(os.path.join('data', 'pacman_beginning.wav'))
+							pygame.mixer.music.play(-1)
 
 							#Flash the Pac Man and Ghost 3 times
                                                         for i in range(0,3):
@@ -381,7 +385,7 @@ class CGame:
 
 		
 							#Stop the intro sound
-							#pygame.mixer.music.stop()							
+							pygame.mixer.music.stop()							
 
 							#Change the game state to RUNNING
 							self.gameState = GameState.RUNNING
@@ -390,7 +394,7 @@ class CGame:
 					elif self.gameState == GameState.PAUSED:
 						if event.button == 1:
 							#Stop the intermission game sound
-							#pygame.mixer.music.stop()
+							pygame.mixer.music.stop()
 
 							#Change the game state to RUNNING
 							self.gameState = GameState.RUNNING
@@ -400,17 +404,58 @@ class CGame:
 					
 				#Track the PacMan and Ghost only if the game is RUNNING
 				if self.gameState == GameState.RUNNING:
+					#Digipad
+					if event.type == pygame.JOYHATMOTION:
+						#Joystick1 position
+                                                jy_hat_pos1 = self.pacManJoystick.get_hat(0)
+						jy_pos1_horizontal = jy_hat_pos1[0]
+						jy_pos1_vertical = jy_hat_pos1[1]
+
+						if (self.twoJSPresent == True and self.secondPlayerActive == True):
+							#Joystick2 position
+							jy_hat_pos2 = self.ghostJoystick.get_hat(0)
+                                                	jy_pos2_horizontal = jy_hat_pos2[0]
+                                                	jy_pos2_vertical = jy_hat_pos2[1]
+
+							if(jy_pos2_horizontal == -1 and jy_pos2_vertical == 0  and int(self.data[self.indexGhost]["left"]) != -1 ):
+                                                        	self.direction_of_ghost = "left"
+                                                        
+                                                	elif(jy_pos2_horizontal == 1 and jy_pos2_vertical == 0 and int(self.data[self.indexGhost]["right"]) != -1 ):
+                                                        	self.direction_of_ghost = "right"
+                                                        
+                                                	if(jy_pos2_vertical == -1 and jy_pos2_horizontal == 0 and int(self.data[self.indexGhost]["down"]) != -1):
+                                                        	self.direction_of_ghost = "down"
+                                                        
+                                                	elif(jy_pos2_vertical == 1 and jy_pos2_horizontal == 0 and int(self.data[self.indexGhost]["up"]) != -1):
+                                                        	self.direction_of_ghost = "up"
+
+
+
+					
+                                                if(jy_pos1_horizontal == -1 and jy_pos1_vertical == 0  and int(self.data[self.indexPacMan]["left"]) != -1 ):
+                                                        self.direction_of_pacman = "left"
+
+                                                elif(jy_pos1_horizontal == 1 and jy_pos1_vertical == 0 and int(self.data[self.indexPacMan]["right"]) != -1 ):
+                                                        self.direction_of_pacman = "right"
+
+                                                if(jy_pos1_vertical == -1 and jy_pos1_horizontal == 0 and int(self.data[self.indexPacMan]["down"]) != -1):
+                                                        self.direction_of_pacman = "down"
+
+                                                elif(jy_pos1_vertical == 1 and jy_pos1_horizontal == 0 and int(self.data[self.indexPacMan]["up"]) != -1):
+                                                        self.direction_of_pacman = "up"
+					
+					#Analog
 					if event.type == pygame.JOYAXISMOTION:
 						#print("Axis Moved...")
 						#Joystick1 position
-						jy_pos1_horizontal = self.pacManJoystick.get_axis(4)
-						jy_pos1_vertical = self.pacManJoystick.get_axis(5)
+						jy_pos1_horizontal = self.pacManJoystick.get_axis(0)
+						jy_pos1_vertical = self.pacManJoystick.get_axis(1)
 					
 						#Raj will check this
 						if (self.twoJSPresent == True and self.secondPlayerActive == True):
 							#Joystick2 position
-							jy_pos2_horizontal = self.ghostJoystick.get_axis(4)
-							jy_pos2_vertical = self.ghostJoystick.get_axis(5)
+							jy_pos2_horizontal = self.ghostJoystick.get_axis(0)
+							jy_pos2_vertical = self.ghostJoystick.get_axis(1)
 					
 							self.handleJoystickTwo(jy_pos2_horizontal,jy_pos2_vertical)		 
 
@@ -431,7 +476,6 @@ class CGame:
 							self.direction_of_pacman = "up"
 
 							#self.indexPacMan = str(self.posPacMan)
-
 
 		pygame.quit()
 
@@ -482,7 +526,7 @@ class CGame:
 						#If the coin is one of the special bean
 						if prev_pos in self.posSpecialBeans:
 							#Play the sound
-							#self.eat_fruit.play()
+							self.eat_fruit.play()
 							
 							#If already in fast mode, then stop the timer and start over timer
 							if (self.pacmanSpeed > 1.0 ):
@@ -502,7 +546,7 @@ class CGame:
 							
 
 						#Play the sound
-						#self.chomp.play()
+						self.chomp.play()
 					else:
 						#If already visited, then set the color to the color of the coin
 						self.dbuffer.setPixel(prev_pos, self.colorCollectedCoins, 1, self.intensityCollectedCoins)
@@ -682,7 +726,7 @@ class CGame:
 					 
 
 					#Play the sound
-					#self.chomp.play()
+					self.chomp.play()
 
 				self.afterLosing()
 
@@ -694,8 +738,8 @@ class CGame:
 			time.sleep(0.5)
 	def afterLosing(self):
 		if(self.pacmanLost() == True):
-		#Play the sound
-		#self.pacman_death.play()
+			#Play the sound
+			self.pacman_death.play()
 	
                      	#Make all leds red from down to top
                 	keys = self.data.keys()

@@ -1,0 +1,61 @@
+{
+    "pacman": {
+        "colorR": "255",
+        "colorG": "255",
+        "colorB": "0",
+        "intensity": "1.0",
+        "speed": "1.0",
+        "init_pos": "1",
+        "start_dir": "up"
+    },
+    "ghost": {
+        "colorR": "255",
+        "colorG": "0",
+        "colorB": "0",
+        "intensity": "1.0",
+        "init_pos": "1",
+        "start_dir": "down"
+    },
+    "aighost1": {
+        "colorR": "174",
+        "colorG": "13",
+        "colorB": "155",
+        "intensity": "1.0",
+        "init_pos": "72"
+    },
+    "aighost2": {
+        "colorR": "221",
+        "colorG": "118",
+        "colorB": "2",
+        "intensity": "1.0",
+        "init_pos": "80"
+    },
+    "aighost3": {
+        "colorR": "174",
+        "colorG": "13",
+        "colorB": "155",
+        "intensity": "1.0",
+        "init_pos": "80"
+    },
+    "spbean": {
+        "colorR": "0",
+        "colorG": "255",
+        "colorB": "0",
+        "intensity": "1.0"
+    },
+    "coins": {
+        "colorR": "255",
+        "colorG": "255",
+        "colorB": "255",
+        "intensity": "0.5"
+    },
+    "collectedCoins": {
+        "colorR": "12",
+        "colorG": "223",
+        "colorB": "223",
+        "intensity": "0.15"
+    },
+    "general": {
+        "sleepTime": "0.5"
+    }
+}
